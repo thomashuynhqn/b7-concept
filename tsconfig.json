@@ -1,0 +1,24 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.node.json"
+    },
+    {
+      "path": "./src/utils/RichTextEditor/tsconfig.json"
+    }
+  ],
+  "compilerOptions": {
+    "baseUrl": ".", // Makes the root directory the base path
+    "paths": {
+      "@components/*": ["src/components/*"], // Alias for components
+      "@lib/*": ["src/lib/*"], // Alias for utilities or logic files
+      "@styles/*": ["src/styles/*"], // Alias for styles
+      "@hooks/*": ["src/hooks/*"], // Alias for hooks (if used)
+      "@redux/*": ["src/redux/*"]
+    }
+  }
+}
