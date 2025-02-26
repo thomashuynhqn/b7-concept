@@ -1,6 +1,6 @@
 # React + TypeScript + Vite
 
-Clone project về chạy "npm i" hoặc "yarn add" để cài node module
+Clone project về chạy "yarn add" để cài node module
 Dùng lệnh "yarn dev" để chạy project dưới local
 Đơn giản thế thôi, sau này sẽ cập nhật thêm cái ghi chú ở đây!!!
 
