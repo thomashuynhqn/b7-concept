@@ -8,10 +8,4 @@ Lưu ý sẽ có 2 nhánh chính để quản lý source code là "main" và "de
 
 - dev: dùng để lập trình code (Nhánh chính để làm việc)
 - main: dùng để deploy code lên trang web (Không được đụng vào phần này)
-
-Commit trong git:
-Nên commit dưới các cái tag sau, việc này giúp phân rõ công việc cũng như hình thức thực hiện chúng:
-![alt text](public/readme/rules.png)
-
-Đây là ví dụ
-![alt text](public/readme/example_commit.png)
+- user-branch: dùng để user tự add branch bằng tên của mình
