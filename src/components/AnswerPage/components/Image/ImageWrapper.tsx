@@ -133,11 +133,17 @@ const WrapImageScreen: React.FC<WarpImageProps> = ({ data }) => {
   return (
     <div className="h-[70vh] overflow-y-auto overflow-x-hidden">
       <Row gutter={[16, 16]}>
-        {data.map((item: string, index: React.Key | null | undefined) => (
-          <Col key={index} span={12} className="flex justify-center">
-            <WarpCard data={item} />
-          </Col>
-        ))}
+        {data ? (
+          data.map((item: string, index: React.Key | null | undefined) => (
+            <Col key={index} span={12} className="flex justify-center">
+              <WarpCard data={item} />
+            </Col>
+          ))
+        ) : (
+          <div className="w-full h-full flex justify-center items-center font-bold text-white">
+            No data
+          </div>
+        )}
       </Row>
     </div>
   );

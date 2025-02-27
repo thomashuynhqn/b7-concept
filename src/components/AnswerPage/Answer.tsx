@@ -67,6 +67,10 @@ interface ImageWrapperProps {
   data: string[];
 }
 
+interface VideoWrapperProps {
+  data: string[];
+}
+
 const normalType = {
   fontWeight: "normal",
   color: "white",
@@ -336,8 +340,8 @@ const Answer = () => {
     return <WarpChatAi data={data} />;
   };
 
-  const WarpVideo: React.FC = () => {
-    return <WrapVideoScreen />;
+  const WarpVideo: React.FC<VideoWrapperProps> = ({ data }) => {
+    return <WrapVideoScreen data={data} />;
   };
 
   const WarpKeyword: React.FC = () => {

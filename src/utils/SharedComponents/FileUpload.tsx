@@ -1,13 +1,25 @@
 import { PlusOutlined } from "@ant-design/icons";
-import type { UploadFile, UploadProps } from "antd";
-import { Upload, message } from "antd";
+import type { GetProp, UploadFile, UploadProps } from "antd";
+import { Image, Upload, message } from "antd";
 import React, { useState } from "react";
 
 interface FileUploadProps {
   onChange?: (images: UploadFile[], videos: UploadFile[]) => void;
 }
 
-const FileUpload: React.FC<FileUploadProps> = ({ onChange }) => {
+type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
+
+const getBase64 = (file: FileType): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+
+const VideoAdder: React.FC<FileUploadProps> = ({ onChange }) => {
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState("");
   const [allFileImage, setAllFileImage] = useState<UploadFile[]>([]);
   const [allFileVideo, setAllFileVideo] = useState<UploadFile[]>([]);
 
@@ -69,6 +81,15 @@ const FileUpload: React.FC<FileUploadProps> = ({ onChange }) => {
     }
   };
 
+  const handlePreview = async (file: UploadFile) => {
+    if (!file.url && !file.preview) {
+      file.preview = await getBase64(file.originFileObj as FileType);
+    }
+
+    setPreviewImage(file.url || (file.preview as string));
+    setPreviewOpen(true);
+  };
+
   const uploadButton = (
     <div>
       <PlusOutlined />
@@ -77,18 +98,32 @@ const FileUpload: React.FC<FileUploadProps> = ({ onChange }) => {
   );
 
   return (
-    <Upload
-      multiple
-      listType="picture-card"
-      fileList={fileList}
-      onChange={handleChange}
-      onRemove={handleRemove}
-      beforeUpload={() => false} // Prevent automatic upload by AntD
-      accept="image/*,video/*"
-    >
-      {uploadButton}
-    </Upload>
+    <>
+      <Upload
+        multiple
+        listType="picture-card"
+        fileList={fileList}
+        onChange={handleChange}
+        onRemove={handleRemove}
+        onPreview={handlePreview}
+        beforeUpload={() => false} // Prevent automatic upload by AntD
+        accept="image/*,video/*"
+      >
+        {uploadButton}
+      </Upload>
+      {previewImage && (
+        <Image
+          wrapperStyle={{ display: "none" }}
+          preview={{
+            visible: previewOpen,
+            onVisibleChange: (visible) => setPreviewOpen(visible),
+            afterOpenChange: (visible) => !visible && setPreviewImage(""),
+          }}
+          src={previewImage}
+        />
+      )}
+    </>
   );
 };
 
-export default FileUpload;
+export default VideoAdder;

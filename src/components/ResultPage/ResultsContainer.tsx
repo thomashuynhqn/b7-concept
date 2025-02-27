@@ -1,7 +1,7 @@
 // src/pages/ResultsContainer.tsx
 
-import React, { useEffect, useState } from "react";
-import { Button, Modal, Spin } from "antd";
+import React, { useCallback, useEffect, useState } from "react";
+import { Button, message, Modal, Spin, UploadFile } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faX, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch } from "react-redux";
@@ -15,7 +15,10 @@ import {
   getResultsAI,
   // getLikeAndSaveResult,
   postLikeCount,
+  postNewResult,
   postSaveQuestion,
+  postUpLoadImage,
+  postUploadVideo,
 } from "../../api/api";
 import { openLoading, clearLoading } from "../../redux/slices/loadingSlice";
 import { DataApi } from "./types/data";
@@ -37,6 +40,9 @@ const ResultsContainer: React.FC = () => {
   const [searchValue, setSearchValue] = useState<string>("");
   const [aiData, setAIData] = useState("");
   const [answerId, setAnswerId] = useState<number>(0);
+
+  const [currentImages, setCurrentImages] = useState<string[]>([]); // State to track current images
+  const [currentVideos, setCurrentVideos] = useState<string[]>([]); // State to track current videos
 
   const searchTerm = searchParams.get("query");
   const searchAIParam = searchParams.get("searchAI");
@@ -133,6 +139,100 @@ const ResultsContainer: React.FC = () => {
   const handleOpenSaveModal = () => {
     setIsSaveModalOpen(true);
   };
+
+  const uploadImages = useCallback(
+    async (id: string, newImages: UploadFile[]) => {
+      try {
+        for (const file of newImages) {
+          // const formData = new FormData();
+          // formData.append("image", file.originFileObj as File);
+
+          // Gọi hàm upload và đợi kết quả
+          const imageUrl = await postUpLoadImage(
+            id,
+            file.originFileObj as File
+          );
+
+          if (imageUrl) {
+            setCurrentImages((prevImages) => [...prevImages, imageUrl]);
+            message.success("Image uploaded successfully!");
+          } else {
+            throw new Error("Image upload failed.");
+          }
+        }
+      } catch (error) {
+        message.error("One or more images failed to upload.");
+      }
+    },
+    []
+  );
+
+  const uploadVideos = useCallback(
+    async (user_id: string, newVideos: UploadFile[]) => {
+      try {
+        for (const file of newVideos) {
+          // const formData = new FormData();
+          // formData.append("video", file.originFileObj as File);
+
+          // Gọi hàm upload và đợi kết quả
+          const videoUrl = await postUploadVideo(
+            user_id,
+            file.originFileObj as File
+          );
+
+          if (videoUrl) {
+            setCurrentVideos((prevImages) => [...prevImages, videoUrl]);
+            message.success("Video uploaded successfully!");
+          } else {
+            throw new Error("Video upload failed.");
+          }
+        }
+      } catch (error) {
+        message.error("One or more video failed to upload.");
+      }
+    },
+    []
+  );
+
+  const handleSubmitChange = useCallback(
+    async (
+      updateAnswer: string,
+      updateQuestions: string,
+      newImages: UploadFile[],
+      newVideos: UploadFile[]
+    ) => {
+      console.log("🚀 ~ newVideos:", newVideos);
+      console.log("🚀 ~ newImages:", newImages);
+      dispatch(openLoading());
+
+      const requestBody = {
+        question: updateQuestions,
+        answer: updateAnswer,
+      };
+
+      await postNewResult(requestBody)
+        .then(async (res) => {
+          message.success("Saved successfully!");
+          console.log("🚀 ~ .then ~ res.data.message:", res.data.id);
+
+          if (newImages.length > 0) {
+            await uploadImages(res.data.id.toString(), newImages);
+          }
+
+          if (newVideos.length > 0) {
+            await uploadVideos(res.data.id.toString(), newVideos);
+          }
+          dispatch(clearLoading());
+          setIsModalSaveDone(true);
+          setIsSaveModalOpen(false);
+        })
+        .catch((err) => {
+          message.error(`Failed to save changes: ${err.message}`);
+          dispatch(clearLoading());
+        });
+    },
+    [currentImages, currentVideos, dispatch]
+  );
 
   // const fetchLikeAndSaveStatus = async (userId: number, questionId: number) => {
   //   try {
@@ -272,10 +372,19 @@ const ResultsContainer: React.FC = () => {
           setIsModalSaveError(true);
           setIsSaveModalOpen(false);
         }}
-        onSave={() => {
+        onSave={(
+          updatedQuestion: string,
+          updatedAnswer: string,
+          uploadedImageFiles?: UploadFile[],
+          uploadedVideoFiles?: UploadFile[]
+        ) => {
           // Process the updated data (e.g., send change request to admin)
-          setIsModalSaveDone(true);
-          setIsSaveModalOpen(false);
+          handleSubmitChange(
+            updatedQuestion,
+            updatedAnswer,
+            uploadedImageFiles || [],
+            uploadedVideoFiles || []
+          );
         }}
       />
 

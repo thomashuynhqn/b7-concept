@@ -34,7 +34,11 @@ interface Data {
 }
 
 interface WarpCardProps {
-  data: Data;
+  data: string;
+}
+
+interface WarpVideoProps {
+  data: string[];
 }
 
 const WarpCard: React.FC<WarpCardProps> = ({ data }) => {
@@ -48,22 +52,28 @@ const WarpCard: React.FC<WarpCardProps> = ({ data }) => {
           width="100%"
           autoPlay
         >
-          <source src={data.link} type="video/mp4" />
+          <source src={data} type="video/mp4" />
         </video>
       </Col>
     </Row>
   );
 };
 
-const WrapVideoScreen: React.FC = () => {
+const WrapVideoScreen: React.FC<WarpVideoProps> = ({ data }) => {
   return (
     <div className="h-[70vh] w-full overflow-y-auto overflow-x-hidden">
       <Row gutter={16}>
-        {fakeData.map((item, index) => (
-          <Col span={24} key={index}>
-            <WarpCard data={item} />
-          </Col>
-        ))}
+        {data ? (
+          data?.map((item, index) => (
+            <Col span={24} key={index}>
+              <WarpCard data={item} />
+            </Col>
+          ))
+        ) : (
+          <div className="w-full h-full flex justify-center items-center font-bold text-white">
+            No data
+          </div>
+        )}
       </Row>
     </div>
   );
