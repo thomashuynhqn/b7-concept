@@ -51,7 +51,10 @@ const WarpCard: React.FC<WarpCardProps> = ({ data, onClick, onDelete }) => {
       </p>
       <Popover
         overlayInnerStyle={{ backgroundColor: "#F5F9FF", borderRadius: 16 }}
-        style={{ boxShadow: "6px 4px 4px rgba(0, 0, 0, 0.12)" }}
+        style={{
+          boxShadow: "6px 4px 4px rgba(0, 0, 0, 0.12)",
+          cursor: "pointer",
+        }}
         placement="bottomRight"
         content={
           <div className="flex flex-col text-right p-1">
@@ -70,7 +73,7 @@ const WarpCard: React.FC<WarpCardProps> = ({ data, onClick, onDelete }) => {
         open={open}
         onOpenChange={handleOpenChange}
       >
-        <FontAwesomeIcon icon={faEllipsis} />
+        <FontAwesomeIcon cursor={"pointer"} icon={faEllipsis} />
       </Popover>
     </div>
   );

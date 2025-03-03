@@ -561,7 +561,7 @@ const Answer = () => {
                 {tabs === "image" ? (
                   <WarpImage data={dataAnswer.images} />
                 ) : tabs === "video" ? (
-                  <WarpVideo />
+                  <WarpVideo data={dataAnswer.videos} />
                 ) : tabs === "ai" ? (
                   <WarpAI data={dataAnswer} />
                 ) : tabs === "keyword" ? (

@@ -167,7 +167,7 @@ const User: React.FC = () => {
     setTabs(tab);
   };
 
-  const renderTabContent = () => {
+  const RenderTabContent = () => {
     switch (tabs) {
       case "user":
         return <UserScreen />;
@@ -194,7 +194,7 @@ const User: React.FC = () => {
     }
   };
 
-  const renderSidebar = () => {
+  const RenderSidebar = () => {
     const tabsForTier = allowedTabs[tier] || [];
     return tabsForTier.map((tab) => (
       <a
@@ -252,7 +252,9 @@ const User: React.FC = () => {
           >
             Logo
           </p>
-          <div className="flex flex-col">{renderSidebar()}</div>
+          <div className="flex flex-col">
+            <RenderSidebar />
+          </div>
         </div>
         <a href="#" className="flex flex-row items-center mb-12">
           <FontAwesomeIcon
@@ -296,7 +298,9 @@ const User: React.FC = () => {
         </a>
       </div>
       <div className="h-full w-[85%] flex flex-col items-center bg-[#F5F9FF]">
-        <div className="h-full pt-12 w-[95%]">{renderTabContent()}</div>
+        <div className="h-full pt-12 w-[95%]">
+          <RenderTabContent />
+        </div>
       </div>
     </div>
   );

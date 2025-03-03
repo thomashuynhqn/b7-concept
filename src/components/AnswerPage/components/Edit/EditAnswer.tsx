@@ -52,6 +52,7 @@ const Edit = () => {
     images: [],
     videos: [],
   });
+  console.log("🚀 ~ Edit ~ dataEdit:", dataEdit);
 
   const [editedContent, setEditedContent] = useState(""); // State for edited content
   const [currentImages, setCurrentImages] = useState<string[]>([]); // State to track current images
@@ -294,7 +295,8 @@ const Edit = () => {
               Hình ảnh, video hiện tại
             </p>
             <div className="h-full mt-2 flex gap-2 flex-wrap overflow-hidden">
-              {dataEdit.images.length === 0 && dataEdit.videos.length === 0 ? (
+              {dataEdit?.images?.length === 0 &&
+              dataEdit?.videos?.length === 0 ? (
                 <div className="text-sm">Chưa có hình ảnh, video</div>
               ) : (
                 // <div className="flex gap-2 flex-wrap">
