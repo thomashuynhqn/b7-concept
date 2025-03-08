@@ -14,6 +14,7 @@ import {
 } from "../../../../api/api";
 import TextEditor from "../../../../utils/RichTextEditor/Editor";
 import FileUpload from "../../../../utils/SharedComponents/FileUpload";
+import MediaPreview from "./MediaPreview";
 // import MediaPreview from "./MediaPreview";
 
 // Define types for specific fields
@@ -51,6 +52,7 @@ const Edit = () => {
     images: [],
     videos: [],
   });
+  console.log("🚀 ~ Edit ~ dataEdit:", dataEdit);
 
   const [editedContent, setEditedContent] = useState(""); // State for edited content
   const [currentImages, setCurrentImages] = useState<string[]>([]); // State to track current images
@@ -108,7 +110,6 @@ const Edit = () => {
           );
 
           if (imageUrl) {
-            console.log("🚀 ~ imageUrl:", imageUrl);
             setCurrentImages((prevImages) => [...prevImages, imageUrl]);
             message.success("Image uploaded successfully!");
           } else {
@@ -150,16 +151,21 @@ const Edit = () => {
   );
 
   const handleSubmitChange = useCallback(async () => {
+    dispatch(openLoading());
     const user_id = localStorage.getItem("user_id");
-    console.log("🚀 ~ handleSubmitChange ~ user_id:", user_id);
 
     if (!user_id) {
       message.error("User ID not found. Please log in again.");
       return;
     }
 
-    await uploadImages(dataEdit.id.toString());
-    await uploadVideos(dataEdit.id.toString());
+    if (newImages.length > 0) {
+      await uploadImages(dataEdit.id.toString());
+    }
+
+    if (newVideos.length > 0) {
+      await uploadVideos(dataEdit.id.toString());
+    }
 
     const requestBody = {
       ...dataEdit,
@@ -169,8 +175,7 @@ const Edit = () => {
       userid: user_id,
     };
 
-    dispatch(openLoading());
-    postSubmitChange(dataEdit.id, requestBody)
+    await postSubmitChange(dataEdit.id, requestBody)
       .then((res) => {
         message.success(res.data.message);
         dispatch(clearLoading());
@@ -185,6 +190,8 @@ const Edit = () => {
     editedContent,
     currentImages,
     currentVideos,
+    newImages,
+    newVideos,
     dispatch,
     navigate,
   ]);
@@ -282,13 +289,14 @@ const Edit = () => {
         style={{ height: "30%" }} // Allocate 35% of the 80vh
       >
         {/* Old Media Section */}
-        {/* <Col span={12} className="p-4">
+        <Col span={12} className="p-4">
           <div className="h-full p-4 bg-[#F5F9FF] rounded-3xl">
             <p className="text-black font-semibold text-base">
               Hình ảnh, video hiện tại
             </p>
             <div className="h-full mt-2 flex gap-2 flex-wrap overflow-hidden">
-              {dataEdit.images.length === 0 && dataEdit.videos.length === 0 ? (
+              {dataEdit?.images?.length === 0 &&
+              dataEdit?.videos?.length === 0 ? (
                 <div className="text-sm">Chưa có hình ảnh, video</div>
               ) : (
                 // <div className="flex gap-2 flex-wrap">
@@ -321,7 +329,7 @@ const Edit = () => {
               )}
             </div>
           </div>
-        </Col> */}
+        </Col>
 
         {/* New Media Section */}
         <Col span={12} className="p-4">
@@ -332,8 +340,6 @@ const Edit = () => {
             <div className="h-full mt-2">
               <FileUpload
                 onChange={(images: UploadFile[], videos: UploadFile[]) => {
-                  console.log("🚀 ~ Edit ~ videos:", videos);
-                  console.log("🚀 ~ Edit ~ images:", images);
                   handleFileUploadChange(images, videos);
                 }}
               />

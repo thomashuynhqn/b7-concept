@@ -9,6 +9,7 @@ interface MediaPreviewProps {
 }
 
 const MediaPreview: React.FC<MediaPreviewProps> = ({ dataEdit }) => {
+  console.log("🚀 ~ dataEdit:", dataEdit);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentVideo, setCurrentVideo] = useState<string | null>(null);
 
@@ -24,16 +25,13 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ dataEdit }) => {
 
   return (
     <div className="h-full p-4 bg-[#F5F9FF] rounded-3xl">
-      <p className="text-black font-semibold text-base">
-        Hình ảnh, video hiện tại
-      </p>
       <div
         className="h-full mt-2 flex gap-2 flex-wrap overflow-y-auto"
         style={{ justifyContent: "flex-start" }}
       >
         {/* Hình ảnh */}
         <Image.PreviewGroup>
-          {dataEdit.images.map((image, index) => (
+          {dataEdit?.images?.map((image, index) => (
             <div
               key={index}
               className="w-20 h-20 rounded-lg flex-shrink-0 border border-gray-300"
@@ -51,7 +49,7 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({ dataEdit }) => {
         </Image.PreviewGroup>
 
         {/* Video */}
-        {dataEdit.videos.map((video, index) => (
+        {dataEdit?.videos?.map((video, index) => (
           <div
             key={index}
             className="w-20 h-20 rounded-lg flex-shrink-0 border border-gray-300 cursor-pointer bg-gray-200 flex items-center justify-center"

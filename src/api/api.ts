@@ -102,6 +102,11 @@ export const postDeleteTopic = (id: number) =>
 /* ==========================
  * QUESTION IMAGE & CHANGES APIs
  * ========================== */
+export const postNewResult = async (body: Record<string, unknown>) => {
+  const response = await https.post(`/new-result/`, body);
+  return response;
+};
+
 export const postUpLoadImage = async (id: string, file: File) => {
   const response = await https.post(
     `/questionanswerpair/${id}/upload_image/`,

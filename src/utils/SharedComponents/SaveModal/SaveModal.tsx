@@ -8,6 +8,7 @@ import {
   Form,
   Typography,
   Divider,
+  UploadFile,
 } from "antd";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -23,7 +24,8 @@ interface SaveModalProps {
   onSave: (
     updatedQuestion: string,
     updatedAnswer: string,
-    uploadedFiles?: any[]
+    uploadedImageFiles?: any[],
+    uploadedVideoFiles?: any[]
   ) => void;
 }
 
@@ -36,19 +38,34 @@ const SaveModal: React.FC<SaveModalProps> = ({
 }) => {
   const [editedQuestion, setEditedQuestion] = useState(question);
   const [editedAnswer, setEditedAnswer] = useState(answer);
-  const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
+  const [uploadedImageFiles, setUploadedImageFiles] = useState<any[]>([]);
+  const [uploadedVideoFiles, setUploadedVideoFiles] = useState<any[]>([]);
 
   // Reset state whenever modal opens or props change.
   useEffect(() => {
     if (visible) {
       setEditedQuestion(question);
       setEditedAnswer(answer);
-      setUploadedFiles([]);
+      setUploadedVideoFiles([]);
+      setUploadedImageFiles([]);
     }
   }, [visible, question, answer]);
 
   const handleSave = () => {
-    onSave(editedQuestion, editedAnswer, uploadedFiles);
+    onSave(
+      editedQuestion,
+      editedAnswer,
+      uploadedImageFiles,
+      uploadedVideoFiles
+    );
+  };
+
+  const handleFileUploadChange = (
+    images: UploadFile[],
+    videos: UploadFile[]
+  ) => {
+    setUploadedImageFiles(images);
+    setUploadedVideoFiles(videos);
   };
 
   return (
@@ -106,8 +123,9 @@ const SaveModal: React.FC<SaveModalProps> = ({
                 }}
               >
                 <VideoAdder
-                  fileList={uploadedFiles}
-                  onFileListChange={setUploadedFiles}
+                  onChange={(images: UploadFile[], videos: UploadFile[]) => {
+                    handleFileUploadChange(images, videos);
+                  }}
                 />
               </div>
             </Form.Item>
