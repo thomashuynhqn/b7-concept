@@ -1,5 +1,6 @@
-import { Button } from "antd";
-import React from "react";
+import { Button, message, Spin } from "antd";
+import React, { useState, useEffect } from "react";
+import { getSaveQuestions, postDeleteSavedQuestion } from "../../../api/api"; // Ensure correct API import
 
 interface SaveQuestionData {
   saved_questions: DataApi[];
@@ -8,7 +9,7 @@ interface DataApi {
   id: number;
   question: string;
   answer: string;
-  keywords: string[]; // Corrected to allow an array of strings
+  keywords: string[];
   like_count: number;
   topic: number;
   images: string;
@@ -18,15 +19,11 @@ interface DataApi {
 interface WarpCardProps {
   data: DataApi;
   onToggleWatch: () => void;
-  onDelete: () => void; // New prop for delete functionality
+  onDelete: () => void;
 }
 
 interface WarpCardInforProps {
   data: DataApi;
-}
-
-interface QuestionScreenProps {
-  data: SaveQuestionData; // Accept list of saved questions as props
 }
 
 const WarpCard: React.FC<WarpCardProps> = ({
@@ -41,7 +38,14 @@ const WarpCard: React.FC<WarpCardProps> = ({
         <Button type="primary" className="mr-3" onClick={onToggleWatch}>
           Xem
         </Button>
-        <Button onClick={onDelete}>Xoá</Button>
+        <Button
+          danger
+          onClick={onDelete}
+          type="primary"
+          className="border hover:bg-white hover:text-red-500"
+        >
+          Xoá
+        </Button>
       </div>
     </div>
   );
@@ -64,24 +68,68 @@ const WarpCardInfor: React.FC<WarpCardInforProps> = ({ data }) => {
   );
 };
 
-const QuestionScreen: React.FC<QuestionScreenProps> = ({ data }) => {
-  console.log(data);
-  const [isViewingDetails, setIsViewingDetails] = React.useState(false);
-  const [selectedItem, setSelectedItem] = React.useState<DataApi | null>(null);
+const QuestionScreen: React.FC = () => {
+  const [isViewingDetails, setIsViewingDetails] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<DataApi | null>(null);
+  const [questions, setQuestions] = useState<DataApi[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSavedQuestions = async () => {
+      const user_id = localStorage.getItem("user_id") || "";
+
+      if (!user_id) {
+        message.error("User ID is missing. Please log in again.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await getSaveQuestions(user_id);
+        setQuestions(response.data.saved_questions || []);
+      } catch (error) {
+        message.error("Lỗi khi tải câu hỏi đã lưu.");
+        console.error("Fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSavedQuestions();
+  }, []);
 
   const handleToggleWatch = (item: DataApi) => {
     setSelectedItem(item);
     setIsViewingDetails(true);
   };
 
-  const handleDelete = (item: DataApi) => {
-    // Add delete logic (e.g., API call)
-    console.log(`Deleting question with ID: ${item.id}`);
+  const handleDelete = async (item: DataApi) => {
+    const user_id = localStorage.getItem("user_id") || "";
+
+    if (!user_id) {
+      message.error("User ID is missing. Please log in again.");
+      return;
+    }
+
+    try {
+      await postDeleteSavedQuestion(Number(user_id), item.id);
+      message.success("Xoá câu hỏi thành công");
+
+      // Update local state to remove the deleted question
+      setQuestions((prev) => prev.filter((q) => q.id !== item.id));
+    } catch (error) {
+      message.error("Lỗi khi xoá câu hỏi");
+      console.error("Delete error:", error);
+    }
   };
 
   return (
     <div className="h-full">
-      {isViewingDetails && selectedItem ? (
+      {loading ? (
+        <div className="flex justify-center items-center h-full">
+          <Spin size="large" />
+        </div>
+      ) : isViewingDetails && selectedItem ? (
         <div className="h-full flex flex-col">
           <div className="flex flex-row justify-between">
             <p className="mb-10 text-[#000000] font-bold text-3xl">
@@ -105,20 +153,18 @@ const QuestionScreen: React.FC<QuestionScreenProps> = ({ data }) => {
             Câu trả lời được lưu
           </p>
           <div>
-            <div>
-              {data?.saved_questions?.length > 0 ? (
-                data.saved_questions.map((item) => (
-                  <WarpCard
-                    key={item.id}
-                    data={item}
-                    onToggleWatch={() => handleToggleWatch(item)}
-                    onDelete={() => handleDelete(item)} // Pass delete handler
-                  />
-                ))
-              ) : (
-                <div>Chưa có câu hỏi nào được lưu</div>
-              )}
-            </div>
+            {questions.length > 0 ? (
+              questions.map((item) => (
+                <WarpCard
+                  key={item.id}
+                  data={item}
+                  onToggleWatch={() => handleToggleWatch(item)}
+                  onDelete={() => handleDelete(item)}
+                />
+              ))
+            ) : (
+              <div>Chưa có câu hỏi nào được lưu</div>
+            )}
           </div>
         </div>
       )}
