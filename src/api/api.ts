@@ -66,6 +66,10 @@ export const postChat = (data: Record<string, unknown>) =>
 export const postChatHistory = (data: Record<string, unknown>) =>
   https.post("/fetch-chat-history/", data);
 
+export const clearChatHistory = (data: Record<string, unknown>) => {
+  https.post("/clear-chat-history/", data);
+};
+
 /* ==========================
  * SAVED QUESTIONS APIs
  * ========================== */
@@ -136,24 +140,69 @@ export const postUploadVideo = async (id: string, file: File) => {
 export const postSubmitChange = (id: number, body: Record<string, unknown>) =>
   https.post(`/questionanswerpair/${id}/submit_changes/`, body);
 
-export const getListPendingEditor = async () =>
-  cacheAPI((url) => https.get(url), "/questionanswerpair/changes/pending");
+export const getListPendingEditor = async () => {
+  const sessionid = getSessionId();
+  if (!sessionid) {
+    console.error(
+      "Session ID is missing. Cannot fetch pending editor changes."
+    );
+    throw new Error("Session ID is missing.");
+  }
+  return cacheAPI(
+    (url) =>
+      https.get(url, {
+        headers: { Authorization: `Bearer ${sessionid}` },
+        withCredentials: true,
+      }),
+    "/questionanswerpair/changes/pending"
+  );
+};
 
 export const getListPendingAdmin = async () => {
   const sessionid = getSessionId();
   if (!sessionid) {
-    throw new Error("Session ID is missing. Admin API cannot be called.");
+    console.error("Session ID is missing. Cannot fetch pending admin changes.");
+    throw new Error("Session ID is missing.");
   }
-  return https.get("/questionanswerpair/changes/", {
-    headers: { sessionid },
-  });
+  return cacheAPI(
+    (url) =>
+      https.get(url, {
+        headers: { Authorization: `Bearer ${sessionid}` },
+        withCredentials: true,
+      }),
+    "/questionanswerpair/changes/"
+  );
+};
+
+export const updateUserInfo = async (
+  userId: string,
+  updatedData: Partial<{ full_name: string; email: string; tier: string }>
+) => {
+  return https.patch(`/update-user/admin/${userId}/`, updatedData);
+};
+
+export const postDeleteUser = (id: string) => {
+  return https.delete(`/users/admin/${id}/delete/`);
 };
 
 export const getListStatusUser = (id: number) =>
   cacheAPI((url) => https.get(url), `/questionanswerpair/changes/user/${id}/`);
 
-export const getDetailsChanges = (id: number) =>
-  cacheAPI((url) => https.get(url), `/questionanswerpair/changes/${id}/diffs/`);
+export const getDetailsChanges = async (id: number) => {
+  const sessionid = getSessionId();
+  if (!sessionid) {
+    console.error("Session ID is missing. Cannot fetch change details.");
+    throw new Error("Session ID is missing.");
+  }
+  return cacheAPI(
+    (url) =>
+      https.get(url, {
+        headers: { Authorization: `Bearer ${sessionid}` },
+        withCredentials: true,
+      }),
+    `/questionanswerpair/changes/${id}/diffs/`
+  );
+};
 
 export const postEditUser = (username: string, full_name: string) =>
   https.post(`/user/edit`, { username, full_name });
@@ -185,11 +234,31 @@ export const getAllUsers = async () => {
 export const getLikeAndSaveResult = (id: number, questionId: number) =>
   https.get(`/user/${id}/${questionId}/check-likes-saved/`);
 
-export const getKeywordsById = (resultId: number) =>
-  cacheAPI((url) => https.get(url), `/keywords/${resultId}`);
-
 export const postApproveOrReject = (
   id: number,
   payload: { action: string; rejected_reason: string }
 ) =>
   https.post(`/questionanswerpair/changes/${id}/approve_or_reject/`, payload);
+
+export const getKeywordsById = (resultId: number) =>
+  cacheAPI((url) => https.get(url), `/keywords/${resultId}`);
+
+export const getKeywords = async (query: string) =>
+  cacheAPI((url, params) => https.get(url, { params }), "/search-keywords/", {
+    query,
+  });
+
+export const updateKeywords = async (resultId: number, keywords: number[]) =>
+  https.put(`/update-keywords/${resultId}/`, { keywords });
+
+export const getListKeywords = async () => {
+  return https.get(`/get-keywords/`);
+};
+
+export const createKeyword = async (label: string) => {
+  return https.post(`/create-keywords/`, { label });
+};
+
+export const deleteKeyword = async (id: number) => {
+  return https.delete(`/delete-keywords/${id}/`);
+};

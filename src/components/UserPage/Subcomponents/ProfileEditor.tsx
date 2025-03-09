@@ -21,7 +21,7 @@ const EditScreen: React.FC<EditScreenProps> = ({ data, setOption }) => {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "pending":
-        return "#FF7600"; // Orange for Pending
+        return "#000000"; // Orange for Pending
       case "approved":
         return "#28a745"; // Green for Approved
       case "rejected":

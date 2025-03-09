@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import ChatCard from "./components/ChatCard";
 import ChatScreen from "./components/ChatScreen";
-import SaveKeywordScreen from "../Keyword/SaveKeywordWrapper";
 import { AxiosResponse } from "axios";
-import { postChat, postChatHistory } from "../../../../api/api";
+import {
+  postChat,
+  postChatHistory,
+  clearChatHistory,
+} from "../../../../api/api";
 
 export interface DataApi {
   id: number;
@@ -63,7 +66,6 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ data }) => {
       content: message,
       created_at: new Date().toISOString(),
     };
-
     setChatData((prev) => [...prev, userMessage]);
 
     // Call postChat to send the new message.
@@ -86,11 +88,25 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ data }) => {
       });
   };
 
+  // Clear chat history using the clearChatHistory API.
+  const handleClearChat = async () => {
+    try {
+      await clearChatHistory({
+        user_id: Number(localStorage.getItem("user_id")),
+        question_answer_pair_id: data.id,
+      });
+      setChatData([]); // Clear the local chat history.
+      console.log("Chat history cleared.");
+    } catch (error) {
+      console.error("Error clearing chat history:", error);
+    }
+  };
+
   return (
     <div className="h-full w-full">
       {showChat ? (
         <div className="h-full w-full flex flex-col bg-white rounded-3xl p-10">
-          {/* Header with tabs and exit */}
+          {/* Header with tabs, Clear Chat button and exit */}
           <div className="flex justify-between items-center border-b pb-2 mb-4">
             <div className="flex justify-between space-x-4 w-full">
               <span
@@ -103,7 +119,13 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ data }) => {
               >
                 AI Chat
               </span>
-              <span>
+              <span className="flex items-center space-x-4">
+                <button
+                  className="text-sm text-gray-600 hover:text-black"
+                  onClick={handleClearChat}
+                >
+                  Clear Chat
+                </button>
                 <button
                   className="text-xl font-bold text-gray-600 hover:text-black"
                   onClick={() => setShowChat(false)}
@@ -118,7 +140,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ data }) => {
             {activeTab === "aichat" ? (
               <ChatScreen chatData={chatData} onSendMessage={handleChat} />
             ) : (
-              <SaveKeywordScreen />
+              <div>""</div>
             )}
           </div>
         </div>
