@@ -2,9 +2,9 @@ import { Button, message, Spin } from "antd";
 import React, { useState, useEffect } from "react";
 import { getSaveQuestions, postDeleteSavedQuestion } from "../../../api/api"; // Ensure correct API import
 
-interface SaveQuestionData {
-  saved_questions: DataApi[];
-}
+// interface SaveQuestionData {
+//   saved_questions: DataApi[];
+// }
 interface DataApi {
   id: number;
   question: string;
