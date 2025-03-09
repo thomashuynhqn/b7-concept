@@ -204,8 +204,24 @@ export const getDetailsChanges = async (id: number) => {
   );
 };
 
-export const postEditUser = (username: string, full_name: string) =>
-  https.post(`/user/edit/`, { username, full_name });
+export const postEditUser = async (username: string, full_name: string) => {
+  const sessionid = localStorage.getItem("sessionid");
+
+  if (!sessionid) {
+    alert("Your session has expired. Please log in again.");
+    window.location.href = "/login"; // Redirect user to login page
+    throw new Error("Session ID is missing.");
+  }
+
+  return https.post(
+    `/user/edit/`,
+    { username, full_name },
+    {
+      headers: { Authorization: `Bearer ${sessionid}` }, // Attach session ID
+      withCredentials: true, // Ensure cookies are sent
+    }
+  );
+};
 
 export const postChangePassword = (
   username: string,
