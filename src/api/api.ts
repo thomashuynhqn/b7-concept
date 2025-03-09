@@ -205,7 +205,7 @@ export const getDetailsChanges = async (id: number) => {
 };
 
 export const postEditUser = (username: string, full_name: string) =>
-  https.post(`/user/edit`, { username, full_name });
+  https.post(`/user/edit/`, { username, full_name });
 
 export const postChangePassword = (
   username: string,
