@@ -1,206 +1,170 @@
-import { faCircle, faEllipsis } from "@fortawesome/free-solid-svg-icons";
+// @ts-ignore
+import { faCircle, faEdit } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, Modal, Popover, Spin } from "antd";
+import { Button, Spin } from "antd";
 import React, { useState } from "react";
-import { getDetailsChanges } from "../../../api/api"; // API call for change details
+import { getDetailsChanges } from "../../../api/api";
 import InformationScreen from "./InformationViewer";
 import EditScreen from "./ProfileEditor";
-import { DataApi, DataApiChange } from "./typeDefinitions"; // Assuming these are your types
-
-interface WarpCardProps {
-  data: DataApi;
-  setOption: (option: string, id?: number) => void;
-}
+import { DataApi, DataApiChange } from "./typeDefinitions";
 
 interface ProgressScreenProps {
-  dataList: DataApi[]; // The fetched data will be passed as props
+  dataList: DataApi[];
 }
-
-const WarpCard: React.FC<WarpCardProps> = ({ data, setOption }) => {
-  const [open, setOpen] = useState<boolean>(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const showModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen);
-  };
-
-  // Function to get color based on status
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "pending":
-        return "#FF7600"; // Orange for Pending
-      case "approved":
-        return "#28a745"; // Green for Approved
-      case "rejected":
-        return "#FA425A"; // Red for Rejected
-      default:
-        return "#595959"; // Default grey
-    }
-  };
-
-  // Function to translate and localize status
-  const getLocalizedStatus = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "pending":
-        return "Chờ duyệt";
-      case "approved":
-        return "Được duyệt";
-      case "rejected":
-        return "Từ chối duyệt";
-      default:
-        return "Không xác định"; // Fallback for unknown statuses
-    }
-  };
-
-  return (
-    <div className="w-full h-full flex justify-between items-center border-b border-b-[#BFBFBF] py-2">
-      <p className="text-black text-base w-1/3">{data.question}</p>
-      <div className="flex items-center w-1/4">
-        <FontAwesomeIcon
-          icon={faCircle}
-          style={{
-            color: getStatusColor(data.status), // Apply color based on status
-          }}
-          className="text-[8px] mr-2"
-        />
-        <p
-          style={{
-            color: getStatusColor(data.status), // Apply color to text based on status
-          }}
-        >
-          {getLocalizedStatus(data.status)}{" "}
-          {/* Translate and localize status */}
-        </p>
-      </div>
-      <Popover
-        overlayInnerStyle={{ backgroundColor: "#F5F9FF", borderRadius: 16 }}
-        style={{ boxShadow: "6px 4px 4px rgba(0, 0, 0, 0.12)" }}
-        placement="bottomRight"
-        content={
-          <div className="flex flex-col text-right p-1">
-            <p
-              className="cursor-pointer text-[#404040]"
-              onClick={() => setOption("information", data.id)}
-            >
-              Chi tiết
-            </p>
-            <p
-              className="border-b border-b-[#808080] pb-1 mb-1 mt-2 cursor-pointer text-[#404040]"
-              onClick={() => setOption("edit", data.id)}
-            >
-              Chỉnh sửa
-            </p>
-            <p className="cursor-pointer text-[#404040]" onClick={showModal}>
-              Xoá
-            </p>
-            <Modal
-              centered
-              open={isModalOpen}
-              footer={false}
-              closable={false}
-              keyboard={false}
-            >
-              <div className="flex flex-col justify-center items-center p-7">
-                <p className="text-2xl text-center mb-5 font-medium">
-                  Bạn có chắc chắn muốn xoá tiến trình xử lý này không ?
-                </p>
-                <div className="flex justify-between w-full">
-                  <Button
-                    className="w-[45%] p-4"
-                    size="middle"
-                    onClick={() => setIsModalOpen(false)}
-                  >
-                    Quay lại chỉnh sửa
-                  </Button>
-                  <Button
-                    type="primary"
-                    className="w-[45%] p-4"
-                    size="middle"
-                    onClick={() => setIsModalOpen(false)}
-                  >
-                    Tiếp tục tìm kiếm
-                  </Button>
-                </div>
-              </div>
-            </Modal>
-          </div>
-        }
-        trigger="click"
-        open={open}
-        onOpenChange={handleOpenChange}
-      >
-        <FontAwesomeIcon icon={faEllipsis} />
-      </Popover>
-    </div>
-  );
-};
 
 const ProgressScreen: React.FC<ProgressScreenProps> = ({ dataList = [] }) => {
   const [option, setOption] = useState<string>("main");
   const [selectedData, setSelectedData] = useState<DataApiChange | null>(null);
-  const [selectedId, setSelectedId] = useState<number | null>(null); // Store the ID separately
-  const [loading, setLoading] = useState(false); // Manage loading state locally
+  const [loading, setLoading] = useState(false); // Keep track of API loading state
 
   const handleSetOption = async (option: string, id?: number) => {
     if (option === "information" && id) {
-      console.log(selectedId);
-      setLoading(true); // Start loading
-      setSelectedId(id); // Store the ID for future use
-      // Fetch the change details when the "information" option is clicked
+      setLoading(true);
       try {
-        const response = await getDetailsChanges(id); // Fetch the change details from the API
-        setSelectedData(response.data); // Set the selected data
-        setOption("information"); // Set option to display InformationScreen
+        const response = await getDetailsChanges(id);
+        setSelectedData(response.data);
+        setOption("information");
       } catch (error) {
         console.error("Failed to load change details", error);
       } finally {
-        setLoading(false); // Stop loading after fetching the data
+        setLoading(false);
       }
     } else {
       setOption(option);
     }
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "pending":
+        return "#6B7280";
+      case "approved":
+        return "#28a745";
+      case "rejected":
+        return "#FA425A";
+      default:
+        return "#595959";
+    }
+  };
+
+  const translateStatus = (status: string) => {
+    const statusMap: Record<string, string> = {
+      pending: "Chờ duyệt",
+      approved: "Được duyệt",
+      rejected: "Từ chối",
+    };
+    return statusMap[status.toLowerCase()] || "Không xác định";
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return `${String(date.getDate()).padStart(2, "0")}/${String(
+      date.getMonth() + 1
+    ).padStart(2, "0")}/${date.getFullYear()}`;
+  };
+
   return (
     <>
       {option === "main" && (
-        <div className="border-l-orange-300">
-          <p className="mb-10 text-[#000000] font-bold text-3xl">
+        <div className="w-full h-full flex flex-col">
+          <h1 className="mb-6 text-3xl font-bold text-black">
             Tiến trình xử lý
-          </p>
-          <div
-            className="overflow-y-auto max-h-[700px] pr-2" // Add scroll for the list
-          >
-            {dataList.length > 0 ? (
-              dataList.map((item, index) => (
-                <WarpCard
-                  key={index}
-                  data={item}
-                  setOption={(opt) => handleSetOption(opt, item.id)} // Use the `id` from the item here
-                />
-              ))
-            ) : (
-              <div>Chưa có tiến trình xử lý nào!</div>
-            )}
+          </h1>
+
+          {/* Table Container */}
+          <div className="w-full bg-white rounded-lg shadow-md p-4 overflow-hidden">
+            <div className="max-h-[500px] overflow-y-auto">
+              <table className="w-full border-collapse">
+                {/* Table Head */}
+                <thead className="sticky top-0 z-30 bg-gray-100 shadow-md">
+                  <tr className="text-left">
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-700">
+                      Câu hỏi
+                    </th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-700">
+                      Trạng thái
+                    </th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-700">
+                      Ngày tạo
+                    </th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-700 text-center">
+                      Hành động
+                    </th>
+                  </tr>
+                </thead>
+
+                {/* Table Body */}
+                <tbody>
+                  {dataList.length > 0 ? (
+                    dataList.map((item) => (
+                      <tr
+                        key={item.id}
+                        className="border-b transition duration-200 hover:bg-gray-50"
+                      >
+                        <td className="py-3 px-4 text-black text-sm">
+                          {item.question}
+                        </td>
+                        <td className="py-3 px-4 flex items-center space-x-2">
+                          <FontAwesomeIcon
+                            icon={faCircle}
+                            className="text-xs"
+                            style={{ color: getStatusColor(item.status) }}
+                          />
+                          <span
+                            className="text-sm"
+                            style={{ color: getStatusColor(item.status) }}
+                          >
+                            {translateStatus(item.status)}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-600">
+                          {formatDate(item.created_at)}
+                        </td>
+                        <td className="py-3 px-4 flex justify-center">
+                          <Button
+                            type="link"
+                            onClick={() =>
+                              handleSetOption("information", item.id)
+                            }
+                          >
+                            <FontAwesomeIcon
+                              icon={faEdit}
+                              className="text-blue-500"
+                            />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={4}
+                        className="py-4 px-4 text-center text-gray-500"
+                      >
+                        Chưa có tiến trình xử lý nào!
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Show loading spinner while fetching data */}
-      {loading ? (
+      {/* Loading Spinner */}
+      {loading && (
         <div className="flex justify-center items-center h-full">
           <Spin size="large" />
         </div>
-      ) : null}
+      )}
 
+      {/* Information Screen */}
       {option === "information" && selectedData && !loading && (
         <InformationScreen data={selectedData} setOption={setOption} />
       )}
 
+      {/* Edit Screen */}
       {option === "edit" && selectedData && !loading && (
         <EditScreen data={selectedData} setOption={setOption} />
       )}

@@ -27,7 +27,7 @@ interface DataApi {
   id: number;
   question: string;
   answer: string;
-  keywords: string[];
+  keywords: [];
   like_count: number;
   topic: any;
   images: string[];
