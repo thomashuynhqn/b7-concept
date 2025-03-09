@@ -112,7 +112,16 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
                 className="h-full bg-[#F5F9FF] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-sm overflow-y-auto"
                 style={{ maxHeight: "150px" }}
               >
-                {data.old_object.answer}
+                {data.old_object.answer &&
+                /<\/?[a-z][\s\S]*>/i.test(data.old_object.answer) ? (
+                  // Là HTML
+                  <div
+                    dangerouslySetInnerHTML={{ __html: data.old_object.answer }}
+                  />
+                ) : (
+                  // Là chuỗi văn bản
+                  <p className="text-black text-sm">{data.old_object.answer}</p>
+                )}
               </div>
             </div>
             <div className="mt-7 h-1/4">
@@ -148,7 +157,16 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
                 className="h-full bg-[#F5F9FF] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-sm overflow-y-auto"
                 style={{ maxHeight: "150px" }}
               >
-                {data.new_object.answer}
+                {data.new_object.answer &&
+                /<\/?[a-z][\s\S]*>/i.test(data.new_object.answer) ? (
+                  // Là HTML
+                  <div
+                    dangerouslySetInnerHTML={{ __html: data.new_object.answer }}
+                  />
+                ) : (
+                  // Là chuỗi văn bản
+                  <p className="text-black text-sm">{data.new_object.answer}</p>
+                )}
               </div>
             </div>
             <div className="mt-7 h-1/4">

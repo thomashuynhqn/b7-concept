@@ -40,6 +40,7 @@ interface WarpCardProps {
 
 interface WarpCardProps2 {
   data: TopicApi[];
+  topic: string;
 }
 
 type TopicApi = {
@@ -349,8 +350,8 @@ const Answer = () => {
     return <WarpKeyWord id={dataAnswer.id} />;
   };
 
-  const Warptopic: React.FC<WarpCardProps2> = ({ data }) => {
-    return <WarpTopic data={data} />;
+  const WarpTopics: React.FC<WarpCardProps2> = ({ data, topic }) => {
+    return <WarpTopic data={data} topicSelected={topic} />;
   };
 
   return (
@@ -567,7 +568,7 @@ const Answer = () => {
                 ) : tabs === "keyword" ? (
                   <WarpKeyword />
                 ) : (
-                  <Warptopic data={topics} />
+                  <WarpTopics data={topics} topic={dataAnswer.topic} />
                 )}
               </Col>
             </Row>

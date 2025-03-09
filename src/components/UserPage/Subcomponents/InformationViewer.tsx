@@ -70,7 +70,20 @@ const InformationScreen: React.FC<InformationScreenProps> = ({
           <div className="flex flex-col h-3/5">
             <p className="text-xl font-bold">Câu trả lời thay đổi</p>
             <p className="h-full bg-[#F5F9FF] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-lg overflow-y-auto">
-              {data.new_object.answer || "Chưa có câu trả lời"}
+              {data.new_object.answer ? (
+                data.new_object.answer &&
+                /<\/?[a-z][\s\S]*>/i.test(data.new_object.answer) ? (
+                  // Là HTML
+                  <div
+                    dangerouslySetInnerHTML={{ __html: data.new_object.answer }}
+                  />
+                ) : (
+                  // Là chuỗi văn bản
+                  <p className="text-black text-sm">{data.new_object.answer}</p>
+                )
+              ) : (
+                "Chưa có câu trả lời"
+              )}
             </p>
           </div>
           <div className="mt-10 h-1/5">
