@@ -10,6 +10,7 @@ import {
   faSpinner,
   faUser,
   faUserGroup,
+  faTag, // new icon for keyword management
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, Modal } from "antd";
@@ -33,6 +34,7 @@ import EditorProgressScreen from "./Subcomponents/EditorProgressTracker";
 import ProgressScreen from "./Subcomponents/ProgressViewer";
 import QuestionScreen from "./Subcomponents/QuestionViewer";
 import UserScreen from "./Subcomponents/UserOverviewScreen";
+import KeywordManagement from "./Subcomponents/AdminProfile/KeywordManagement"; // new component
 
 interface SaveQuestionData {
   saved_questions: {
@@ -75,6 +77,7 @@ const User: React.FC = () => {
       "editorprogress",
       "usergroup",
       "warehouse",
+      "keywordmanage", // added new tab only for admin
       "system",
     ],
     editor: ["user", "question", "editorprogress"],
@@ -187,6 +190,8 @@ const User: React.FC = () => {
         return <UsersScreen data={users} />;
       case "warehouse":
         return <WarehouseScreen data={topics} />;
+      case "keywordmanage":
+        return <KeywordManagement />;
       case "system":
         return <SystemScreen />;
       default:
@@ -210,6 +215,8 @@ const User: React.FC = () => {
               ? faUserGroup
               : tab === "warehouse"
               ? faFolderOpen
+              : tab === "keywordmanage"
+              ? faTag
               : tab === "system"
               ? faShieldCat
               : tab === "editorprogress" || tab === "progress"
@@ -236,6 +243,8 @@ const User: React.FC = () => {
             ? "Người dùng"
             : tab === "warehouse"
             ? "Kho dữ liệu"
+            : tab === "keywordmanage"
+            ? "Keyword"
             : "Hệ thống"}
         </p>
       </a>

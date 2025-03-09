@@ -206,8 +206,8 @@ const ResultsContainer: React.FC = () => {
       dispatch(openLoading());
 
       const requestBody = {
-        question: updateQuestions,
-        answer: updateAnswer,
+        question: updateAnswer,
+        answer: updateQuestions,
       };
 
       await postNewResult(requestBody)
