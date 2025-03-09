@@ -175,11 +175,7 @@ const User: React.FC = () => {
       case "user":
         return <UserScreen />;
       case "question":
-        return savedData ? (
-          <QuestionScreen data={savedData} />
-        ) : (
-          <div>Loading...</div>
-        );
+        return savedData ? <QuestionScreen /> : <div>Loading...</div>;
       case "progress":
         return <ProgressScreen dataList={progressData} />;
       case "editorprogress":

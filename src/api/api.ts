@@ -82,8 +82,8 @@ export const postLikeCount = (id: string, user_id: string) =>
 export const postSaveQuestion = (id: string, user_id: string) =>
   https.post(`/save-question/${id}/`, { user_id });
 
-export const postDeleteSavedQuestion = (id: number) =>
-  https.delete(`/delete-saved-question/${id}`);
+export const postDeleteSavedQuestion = (user_id: number, id: number) =>
+  https.delete(`/delete-saved-question/${user_id}/${id}`);
 
 /* ==========================
  * TOPIC MANAGEMENT APIs
