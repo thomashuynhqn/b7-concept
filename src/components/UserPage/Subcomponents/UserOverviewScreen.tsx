@@ -41,16 +41,26 @@ const UserScreen = () => {
   const showModal = () => {
     setIsModalOpen(true);
   };
-  const onFinish: FormProps<FieldType>["onFinish"] = (values) => {
-    console.log("Success:", values);
-    postEditUser(values.username ?? "", values.fullname ?? "")
-      .then((res) => {
-        console.log(res);
+  const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
+    console.log("Submitting:", values);
+
+    try {
+      const res = await postEditUser(
+        values.username ?? "",
+        values.fullname ?? ""
+      );
+      console.log("Response:", res);
+
+      if (res.status === 200) {
         showModal();
         localStorage.setItem("full_name", values.fullname ?? "");
         localStorage.setItem("username", values.username ?? "");
-      })
-      .catch((err) => console.log(err));
+      } else {
+        console.error("Failed to update user:", res);
+      }
+    } catch (err) {
+      console.error("Error updating user:", err);
+    }
   };
 
   const onFinishChangePassword: FormProps<FieldTypeChangePassword>["onFinish"] =
