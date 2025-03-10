@@ -127,7 +127,7 @@ const WarpCard: React.FC<
       key: `topic-${data.id}`,
       label: (
         <span className="font-bold text-base">
-          <Checkbox
+          {/* <Checkbox
             disabled={topicSelected !== null}
             className="pr-2"
             checked={selectedKey === `${data.id}`}
@@ -135,7 +135,7 @@ const WarpCard: React.FC<
               e.stopPropagation(); // Ngăn chặn sự kiện click của Menu
               handleCheckboxChange(`${data.id}`);
             }}
-          />
+          /> */}
           {data.name}
         </span>
       ),
@@ -155,23 +155,23 @@ const WarpCard: React.FC<
             {subTopic.name}
           </span>
         ),
-        children: subTopic.children.map((question) => ({
-          key: `question-${question.id}`,
-          label: (
-            <div>
-              <Checkbox
-                disabled={topicSelected !== null}
-                className="pr-2"
-                checked={selectedKey === `${question.id}`}
-                onChange={(e) => {
-                  e.stopPropagation();
-                  handleCheckboxChange(`${question.id}`);
-                }}
-              />
-              {question.name}
-            </div>
-          ),
-        })),
+        // children: subTopic.question_answer_pairs.map((question) => ({
+        //   key: `question-${question.id}`,
+        //   label: (
+        //     <div>
+        //       {/* <Checkbox
+        //         disabled={topicSelected !== null}
+        //         className="pr-2"
+        //         checked={selectedKey === `${question.id}`}
+        //         onChange={(e) => {
+        //           e.stopPropagation();
+        //           handleCheckboxChange(`${question.id}`);
+        //         }}
+        //       /> */}
+        //       {question.question}
+        //     </div>
+        //   ),
+        // })),
       })),
     },
   ];
@@ -242,7 +242,7 @@ const WarpTopic: React.FC<WarpCardProps> = ({ data, topicSelected }) => {
           topicSelected = selectedKey;
 
           message.success("The result has been added to the topic.");
-          navigate("/topic");
+          // navigate("/topic");
         })
         .catch((error) => {
           dispatch(clearLoading());

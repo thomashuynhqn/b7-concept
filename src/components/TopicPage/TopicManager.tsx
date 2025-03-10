@@ -24,8 +24,19 @@ type MenuItem = Required<MenuProps>["items"][number];
 type TopicApi = {
   id: number;
   name: string;
-  question_answer_pairs: any[];
+  question_answer_pairs: QuestionAnswerPair[];
   children: TopicApi[];
+};
+
+type QuestionAnswerPair = {
+  answer: string;
+  id: number;
+  images: [];
+  keywords: [];
+  like_count: number;
+  question: string;
+  topic: number;
+  videos: [];
 };
 
 interface WarpCardProps {
@@ -63,9 +74,9 @@ const WarpCard: React.FC<WarpCardProps> = ({
 
   const [isQuestionModalOpen, setIsQuestionModalOpen] =
     useState<boolean>(false);
-  const [selectedQA, setSelectedQA] = useState<TopicApi | null>(null);
+  const [selectedQA, setSelectedQA] = useState<QuestionAnswerPair | null>(null);
 
-  const handleOpenQuestionModal = (qaPairs: TopicApi) => {
+  const handleOpenQuestionModal = (qaPairs: QuestionAnswerPair) => {
     setSelectedQA(qaPairs);
     setIsQuestionModalOpen(true);
   };
@@ -155,16 +166,16 @@ const WarpCard: React.FC<WarpCardProps> = ({
             className="font-bold text-lg cursor-pointer"
             onClick={toggleOpen}
           >
-            <div
+            {/* <div
               className="flex justify-between items-center w-full cursor-pointer hover:text-blue-700"
               draggable
               onClick={(e) => {
                 e.stopPropagation();
                 handleOpenQuestionModal(data);
               }}
-            >
-              {data.name}
-            </div>
+            > */}
+            {data.name}
+            {/* </div> */}
           </span>
           <Popover
             content={
@@ -203,21 +214,21 @@ const WarpCard: React.FC<WarpCardProps> = ({
             onDragOver={onDragOver}
             onDrop={() => onDrop(subTopic.id)}
           >
-            <div
+            {/* <div
               className="flex justify-between items-center w-full cursor-pointer hover:text-blue-700"
               draggable
               onClick={(e) => {
                 e.stopPropagation();
                 handleOpenQuestionModal(subTopic);
               }}
-            >
-              <span className="font-bold truncate max-w-[70%]">
-                {subTopic.name}
-              </span>
-            </div>
+            > */}
+            <span className="font-bold truncate max-w-[70%]">
+              {subTopic.name}
+            </span>
+            {/* </div> */}
             <div className="flex items-center space-x-2 min-w-[200px] justify-end">
               <span className="text-[#595959] text-sm border border-[#595959] rounded-2xl px-2 py-1 font-extralight">
-                Tổng số câu hỏi ({subTopic.children.length})
+                Tổng số câu hỏi ({subTopic.question_answer_pairs.length})
               </span>
 
               <Popover
@@ -248,59 +259,28 @@ const WarpCard: React.FC<WarpCardProps> = ({
             </div>
           </div>
         ),
-        children: subTopic.children.map((child) => ({
+        children: subTopic.question_answer_pairs.map((child) => ({
           key: `question-${child.id}`,
           label: (
+            // <div
+            //   className="flex justify-between items-center w-full"
+            //   draggable
+            //   onDragStart={() => onDragStart(child, child.id)}
+            //   onDragOver={onDragOver}
+            //   onDrop={() => onDrop(child.id)}
+            // >
             <div
-              className="flex justify-between items-center w-full"
+              className="flex justify-between items-center w-full cursor-pointer hover:text-blue-700"
               draggable
-              onDragStart={() => onDragStart(child, child.id)}
-              onDragOver={onDragOver}
-              onDrop={() => onDrop(child.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenQuestionModal(child);
+              }}
             >
-              <div
-                className="flex justify-between items-center w-full cursor-pointer hover:text-blue-700"
-                draggable
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleOpenQuestionModal(child);
-                }}
-              >
-                <span className="font-bold truncate max-w-[70%]">
-                  {child.name}
-                </span>
-              </div>
-              <div className="flex items-center space-x-2 min-w-[200px] justify-end">
-                <span className="text-[#595959] text-sm border border-[#595959] rounded-2xl px-2 py-1 font-extralight">
-                  Tổng số câu hỏi ({child.children.length})
-                </span>
-
-                <Popover
-                  content={
-                    <div>
-                      <p
-                        className="cursor-pointer"
-                        onClick={() => openEditSubTopicModal(child)}
-                      >
-                        Đổi tên subtopic
-                      </p>
-                      <p
-                        className="cursor-pointer text-red-500"
-                        onClick={() => onDeleteSubTopic(subTopic.id, child.id)}
-                      >
-                        Xoá subtopic
-                      </p>
-                    </div>
-                  }
-                  trigger="click"
-                >
-                  <FontAwesomeIcon
-                    icon={faEllipsis}
-                    className="p-3 cursor-pointer"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </Popover>
-              </div>
+              <span className="font-bold truncate max-w-[70%]">
+                {child.question}
+              </span>
+              {/* </div> */}
             </div>
           ),
         })),
@@ -369,21 +349,21 @@ const WarpCard: React.FC<WarpCardProps> = ({
         <div className="fixed inset-0 z-50 bg-gray-800 bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-8 rounded-xl shadow-lg w-1/3">
             <h2 className="text-2xl font-semibold mb-6 text-center">
-              {selectedQA.name}
+              {selectedQA.question}
             </h2>
             <div className="space-y-4 max-h-96 overflow-y-auto">
-              {selectedQA.question_answer_pairs.map((qa, index) => (
-                <div key={index} className="p-3 border rounded-lg bg-gray-100">
-                  <p className="font-semibold text-lg">{qa.question}</p>
-                  <div className="text-gray-700">
-                    {qa.answer && /<\/?[a-z][\s\S]*>/i.test(qa.answer) ? (
-                      <div dangerouslySetInnerHTML={{ __html: qa.answer }} />
-                    ) : (
-                      <p className="text-black text-sm">{qa.answer}</p>
-                    )}
-                  </div>
+              <div className="p-3 border rounded-lg bg-gray-100">
+                <div className="text-gray-700">
+                  {selectedQA.answer &&
+                  /<\/?[a-z][\s\S]*>/i.test(selectedQA.answer) ? (
+                    <div
+                      dangerouslySetInnerHTML={{ __html: selectedQA.answer }}
+                    />
+                  ) : (
+                    <p className="text-black text-sm">{selectedQA.answer}</p>
+                  )}
                 </div>
-              ))}
+              </div>
             </div>
 
             <div className="flex justify-end gap-4 mt-6">
