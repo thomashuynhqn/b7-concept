@@ -106,6 +106,14 @@ export const postDeleteTopic = (id: number) =>
 /* ==========================
  * QUESTION IMAGE & CHANGES APIs
  * ========================== */
+export const postAddResultToTopic = async (
+  body: Record<string, unknown>,
+  topicId: string
+) => {
+  const response = https.post(`/topics/${topicId}/add-result/`, body);
+  return response;
+};
+
 export const postNewResult = async (body: Record<string, unknown>) => {
   const response = await https.post(`/new-result/`, body);
   return response;

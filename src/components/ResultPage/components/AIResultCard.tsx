@@ -15,6 +15,16 @@ const AIResultCard: React.FC<AIResultCardProps> = ({
   onSaveAnswer,
   onClose,
 }) => {
+  // Function to format text and check for markdown bold formatting.
+  const formatText = (text: string) => {
+    return text.split(/(\*\*.*?\*\*)/g).map((part, index) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return <strong key={index}>{part.slice(2, -2)}</strong>;
+      }
+      return <span key={index}>{part}</span>;
+    });
+  };
+
   return (
     <div className="w-full bg-white mb-4">
       <div className="border border-[#BFBFBF] p-5 rounded-xl">
@@ -22,8 +32,24 @@ const AIResultCard: React.FC<AIResultCardProps> = ({
         <div className="flex justify-between items-center mb-4">
           <img src="/Vector.svg" alt="Vector Icon" className="w-6 h-6" />
         </div>
-        {/* Content */}
-        <div className="text-black mb-4">{data}</div>
+        {/* Content with scroll added */}
+        <div className="text-black mb-4 overflow-y-auto max-h-96">
+          {data.split("\n").map((line, index) => {
+            // Check if the line is a markdown heading (###)
+            if (line.startsWith("### ")) {
+              return (
+                <h3 key={index} className="text-xl font-bold mb-2">
+                  {formatText(line.slice(4))}
+                </h3>
+              );
+            }
+            return (
+              <p key={index} className="leading-relaxed mb-2">
+                {formatText(line)}
+              </p>
+            );
+          })}
+        </div>
         {/* Action Buttons */}
         <div className="flex justify-start space-x-4">
           <button

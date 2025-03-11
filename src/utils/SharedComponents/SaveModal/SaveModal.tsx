@@ -16,6 +16,21 @@ import VideoAdder from "./VideoAdder";
 
 const { Title } = Typography;
 
+// A simple markdown-to-HTML converter (supports "### " headings and **bold**)
+const markdownToHtml = (markdown: string): string => {
+  return markdown
+    .split("\n")
+    .map((line) => {
+      // Convert markdown headings (only "### " is supported here)
+      if (line.startsWith("### ")) {
+        return `<h3>${line.slice(4)}</h3>`;
+      }
+      // Convert bold text wrapped in **
+      return line.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+    })
+    .join("<br/>");
+};
+
 interface SaveModalProps {
   visible: boolean;
   question: string;
@@ -24,8 +39,8 @@ interface SaveModalProps {
   onSave: (
     updatedQuestion: string,
     updatedAnswer: string,
-    uploadedImageFiles?: any[],
-    uploadedVideoFiles?: any[]
+    uploadedImageFiles?: UploadFile[],
+    uploadedVideoFiles?: UploadFile[]
   ) => void;
 }
 
@@ -37,17 +52,22 @@ const SaveModal: React.FC<SaveModalProps> = ({
   onSave,
 }) => {
   const [editedQuestion, setEditedQuestion] = useState(question);
-  const [editedAnswer, setEditedAnswer] = useState(answer);
-  const [uploadedImageFiles, setUploadedImageFiles] = useState<any[]>([]);
-  const [uploadedVideoFiles, setUploadedVideoFiles] = useState<any[]>([]);
+  // Convert markdown answer from AI to HTML for ReactQuill editor.
+  const [editedAnswer, setEditedAnswer] = useState(markdownToHtml(answer));
+  const [uploadedImageFiles, setUploadedImageFiles] = useState<UploadFile[]>(
+    []
+  );
+  const [uploadedVideoFiles, setUploadedVideoFiles] = useState<UploadFile[]>(
+    []
+  );
 
-  // Reset state whenever modal opens or props change.
+  // Reset state whenever modal opens or the AI data changes.
   useEffect(() => {
     if (visible) {
       setEditedQuestion(question);
-      setEditedAnswer(answer);
-      setUploadedVideoFiles([]);
+      setEditedAnswer(markdownToHtml(answer));
       setUploadedImageFiles([]);
+      setUploadedVideoFiles([]);
     }
   }, [visible, question, answer]);
 
@@ -68,6 +88,26 @@ const SaveModal: React.FC<SaveModalProps> = ({
     setUploadedVideoFiles(videos);
   };
 
+  // Base container style for content areas
+  const baseContainerStyle: React.CSSProperties = {
+    border: "1px solid #ccc",
+    borderRadius: 8,
+    padding: 16,
+    minHeight: 250,
+    maxHeight: 400,
+    overflowY: "auto",
+  };
+
+  // Sticky container style for ReactQuill editor.
+  // Note: While this makes the container sticky, we also need to override the Quill toolbar.
+  const stickyEditorStyle: React.CSSProperties = {
+    ...baseContainerStyle,
+    position: "sticky",
+    top: 0,
+    backgroundColor: "#fff",
+    zIndex: 2,
+  };
+
   return (
     <Modal
       open={visible}
@@ -84,26 +124,17 @@ const SaveModal: React.FC<SaveModalProps> = ({
         <Row gutter={24}>
           <Col span={24}>
             <Form.Item label="Câu hỏi">
-              <div>
-                <Input
-                  size="large"
-                  value={editedQuestion}
-                  onChange={(e) => setEditedQuestion(e.target.value)}
-                  placeholder="Nhập câu hỏi của bạn"
-                />
-              </div>
+              <Input
+                size="large"
+                value={editedQuestion}
+                onChange={(e) => setEditedQuestion(e.target.value)}
+                placeholder="Nhập câu hỏi của bạn"
+              />
             </Form.Item>
           </Col>
           <Col span={14}>
             <Form.Item label="Câu trả lời (mới từ AI)">
-              <div
-                style={{
-                  border: "1px solid #ccc",
-                  borderRadius: 8,
-                  padding: 16,
-                  minHeight: 250,
-                }}
-              >
+              <div style={stickyEditorStyle} className="sticky-editor">
                 <ReactQuill
                   theme="snow"
                   value={editedAnswer}
@@ -114,19 +145,8 @@ const SaveModal: React.FC<SaveModalProps> = ({
           </Col>
           <Col span={10}>
             <Form.Item label="Hình ảnh, video liên quan">
-              <div
-                style={{
-                  border: "1px solid #ccc",
-                  borderRadius: 8,
-                  padding: 16,
-                  minHeight: 250,
-                }}
-              >
-                <VideoAdder
-                  onChange={(images: UploadFile[], videos: UploadFile[]) => {
-                    handleFileUploadChange(images, videos);
-                  }}
-                />
+              <div style={baseContainerStyle}>
+                <VideoAdder onChange={handleFileUploadChange} />
               </div>
             </Form.Item>
           </Col>
@@ -134,7 +154,7 @@ const SaveModal: React.FC<SaveModalProps> = ({
         <Divider />
         <Row justify="center" gutter={16}>
           <Col>
-            <Button size="large" type="default" onClick={onCancel}>
+            <Button size="large" onClick={onCancel}>
               Huỷ chỉnh sửa
             </Button>
           </Col>
@@ -145,6 +165,17 @@ const SaveModal: React.FC<SaveModalProps> = ({
           </Col>
         </Row>
       </Form>
+      {/* Custom CSS to make the ReactQuill toolbar sticky */}
+      <style>
+        {`
+          .sticky-editor .ql-toolbar.ql-snow {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            z-index: 3;
+          }
+        `}
+      </style>
     </Modal>
   );
 };

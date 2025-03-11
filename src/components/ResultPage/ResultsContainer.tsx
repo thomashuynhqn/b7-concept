@@ -13,7 +13,6 @@ import SaveModal from "../../utils/SharedComponents/SaveModal/SaveModal";
 import {
   getResults,
   getResultsAI,
-  // getLikeAndSaveResult,
   postLikeCount,
   postNewResult,
   postSaveQuestion,
@@ -144,10 +143,6 @@ const ResultsContainer: React.FC = () => {
     async (id: string, newImages: UploadFile[]) => {
       try {
         for (const file of newImages) {
-          // const formData = new FormData();
-          // formData.append("image", file.originFileObj as File);
-
-          // Gọi hàm upload và đợi kết quả
           const imageUrl = await postUpLoadImage(
             id,
             file.originFileObj as File
@@ -171,17 +166,13 @@ const ResultsContainer: React.FC = () => {
     async (user_id: string, newVideos: UploadFile[]) => {
       try {
         for (const file of newVideos) {
-          // const formData = new FormData();
-          // formData.append("video", file.originFileObj as File);
-
-          // Gọi hàm upload và đợi kết quả
           const videoUrl = await postUploadVideo(
             user_id,
             file.originFileObj as File
           );
 
           if (videoUrl) {
-            setCurrentVideos((prevImages) => [...prevImages, videoUrl]);
+            setCurrentVideos((prevVideos) => [...prevVideos, videoUrl]);
             message.success("Video uploaded successfully!");
           } else {
             throw new Error("Video upload failed.");
@@ -208,12 +199,14 @@ const ResultsContainer: React.FC = () => {
       const requestBody = {
         question: updateAnswer,
         answer: updateQuestions,
+        images: currentImages, // <-- include currentImages
+        videos: currentVideos, // <-- include currentVideos
       };
 
       await postNewResult(requestBody)
         .then(async (res) => {
           message.success("Saved successfully!");
-          console.log("🚀 ~ .then ~ res.data.message:", res.data.id);
+          console.log("🚀 ~ res.data.id:", res.data.id);
 
           if (newImages.length > 0) {
             await uploadImages(res.data.id.toString(), newImages);
@@ -231,22 +224,8 @@ const ResultsContainer: React.FC = () => {
           dispatch(clearLoading());
         });
     },
-    [currentImages, currentVideos, dispatch]
+    [dispatch]
   );
-
-  // const fetchLikeAndSaveStatus = async (userId: number, questionId: number) => {
-  //   try {
-  //     const response = await getLikeAndSaveResult(userId, questionId);
-  //     if (response && response.data) return response.data;
-  //     throw new Error("Invalid API response");
-  //   } catch (error) {
-  //     console.error(
-  //       `Error fetching like/save status for question ${questionId}:`,
-  //       error
-  //     );
-  //     return { liked: false, saved: false };
-  //   }
-  // };
 
   // Update data when the URL search term changes.
   useEffect(() => {
@@ -268,7 +247,6 @@ const ResultsContainer: React.FC = () => {
           } else {
             const { data } = await getResults(searchTerm);
             setResults(data.questions);
-            // Optionally, fetch like/save statuses here...
             setIsSearchWithAI(false);
           }
         } catch (err) {
@@ -369,7 +347,7 @@ const ResultsContainer: React.FC = () => {
         question={searchValue}
         answer={aiData}
         onCancel={() => {
-          setIsModalSaveError(true);
+          // Simply close the modal without showing any error popup.
           setIsSaveModalOpen(false);
         }}
         onSave={(
@@ -378,7 +356,6 @@ const ResultsContainer: React.FC = () => {
           uploadedImageFiles?: UploadFile[],
           uploadedVideoFiles?: UploadFile[]
         ) => {
-          // Process the updated data (e.g., send change request to admin)
           handleSubmitChange(
             updatedQuestion,
             updatedAnswer,
@@ -397,9 +374,9 @@ const ResultsContainer: React.FC = () => {
             saved={saved}
             onClickLike={handleClickLike}
             onClickSave={handleClickSave}
-            loading={loading} // required prop
-            error={error} // required prop
-            isSearchWithAI={isSearchWithAI} // required prop
+            loading={loading}
+            error={error}
+            isSearchWithAI={isSearchWithAI}
             searchValue={searchValue}
             onSearchValueChange={setSearchValue}
             onKeyPress={handleKeyPress}
@@ -410,7 +387,7 @@ const ResultsContainer: React.FC = () => {
             aiData={aiData}
             answerId={answerId}
             onClose={() => setIsSearchWithAI(false)}
-            onSaveAnswer={() => handleOpenSaveModal()}
+            onSaveAnswer={handleOpenSaveModal}
           />
         </div>
       ) : (
@@ -420,9 +397,9 @@ const ResultsContainer: React.FC = () => {
           saved={saved}
           onClickLike={handleClickLike}
           onClickSave={handleClickSave}
-          loading={loading} // required prop
-          error={error} // required prop
-          isSearchWithAI={isSearchWithAI} // required prop
+          loading={loading}
+          error={error}
+          isSearchWithAI={isSearchWithAI}
           searchValue={searchValue}
           onSearchValueChange={setSearchValue}
           onKeyPress={handleKeyPress}

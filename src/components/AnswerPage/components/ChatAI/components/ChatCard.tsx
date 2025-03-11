@@ -21,7 +21,15 @@ const ChatCard: React.FC<ChatCardProps> = ({ data, onChatClick }) => {
           Chat với AI
         </button>
       </div>
-      <div className="flex-1 overflow-y-auto text-black">{data.answer}</div>
+      <div className="flex-1 overflow-y-auto text-black">
+        {data.answer && /<\/?[a-z][\s\S]*>/i.test(data.answer) ? (
+          // Là HTML
+          <div dangerouslySetInnerHTML={{ __html: data.answer }} />
+        ) : (
+          // Là chuỗi văn bản
+          <p className="text-black text-sm">{data.answer}</p>
+        )}
+      </div>
       <div className="mt-4">
         <div className="flex items-center text-gray-600 cursor-pointer">
           <FontAwesomeIcon icon={faListCheck} />
