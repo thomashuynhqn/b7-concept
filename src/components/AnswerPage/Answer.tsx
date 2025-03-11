@@ -23,7 +23,6 @@ import WrapImageScreen from "./components/Image/ImageWrapper";
 import WarpKeyWord from "./components/Keyword/KeywordWrapper";
 import WrapVideoScreen from "./components/Media/WarpVideoScreen";
 import WarpTopic from "./components/Topic/TopicWrapper";
-import { set } from "lodash";
 
 interface DataApi {
   id: number;
@@ -43,8 +42,6 @@ interface WarpCardProps {
 interface WarpCardProps2 {
   data: TopicApi[];
   topic: string;
-  selectTopic: string;
-  setSelectedTopic: (topic: string) => void;
   handleAddResultToTopic: (topic: string) => void;
 }
 
@@ -179,7 +176,7 @@ const Answer = () => {
         setTopicId(res.data.topic || "");
         dispatch(clearLoading());
       })
-      .catch((err) => {
+      .catch(() => {
         dispatch(clearLoading());
       });
   }, [searchParams, dispatch]);
@@ -269,74 +266,43 @@ const Answer = () => {
 
   const WarpCard: React.FC<WarpCardProps> = ({ data }) => {
     return (
-      <div className="h-full bg-white mt-4 pb-10">
-        <div className="h-full border-solid border-[#BFBFBF] border-[1px] p-5 rounded-xl">
-          <Row gutter={16}>
+      <div className="bg-white mt-4 pb-4 border shadow-lg rounded-xl">
+        <div className="p-5">
+          {/* Header Section */}
+          <Row gutter={16} className="items-center">
             <Col span={12}>
-              <div className="text-black font-bold">{data.question}</div>
+              <h2 className="text-xl font-bold text-[#227EFF]">
+                {data.question}
+              </h2>
             </Col>
-            <Col span={12}>
+            <Col span={12} className="text-right">
               <Button
-                className="border-[#227EFF] bg-white text-[#227EFF] w-32 float-right"
-                size="large"
                 type="primary"
+                className="border-[#227EFF] bg-white text-[#227EFF]"
                 onClick={() => navigate(`/results/answer/edit?id=${data.id}`)}
               >
                 Chỉnh sửa
               </Button>
             </Col>
           </Row>
-          <Row gutter={16} className="mt-5 mb-5">
-            <Col span={24}>
-              <div className="text-black">
-                {typeof data.answer === "string" ? (
-                  /<\/?[a-z][\s\S]*>/i.test(data.answer) ? (
-                    // Là HTML
-                    <div dangerouslySetInnerHTML={{ __html: data.answer }} />
-                  ) : (
-                    // Là chuỗi văn bản
-                    <p className="text-black text-sm">{data.answer}</p>
-                  )
-                ) : (
-                  <p className="text-black text-sm">Không có dữ liệu hợp lệ</p>
-                )}
-              </div>
-            </Col>
-          </Row>
-          {/* <Row gutter={16} className="absolute bottom-10">
-            <Col>
-              <div>
-                <FontAwesomeIcon
-                  className="cursor-pointer"
-                  icon={faHeart}
-                  onClick={() => handleClickLike(data.id)}
-                  style={{
-                    color: liked ? "#595959" : "#FF7600", // Use `like` state for the color
-                  }}
+
+          <hr className="my-4 border-gray-300" />
+
+          {/* Answer Section with scroll */}
+          <div className="max-h-80 overflow-y-auto pr-2">
+            {typeof data.answer === "string" ? (
+              /<\/?[a-z][\s\S]*>/i.test(data.answer) ? (
+                <div
+                  className="prose max-w-full"
+                  dangerouslySetInnerHTML={{ __html: data.answer }}
                 />
-                <span
-                  className="pl-2"
-                  style={{
-                    color: data.like_count !== 0 ? "#FF7600" : "#595959", // Use count for number color
-                  }}
-                >
-                  {data.like_count}
-                </span>
-              </div>
-            </Col>
-            <Col span={10}>
-              <div
-                className="text-[#595959] w-max cursor-pointer"
-                onClick={() => handleClickSave(data.id)}
-                style={{ color: saved ? "#227EFF" : "#595959" }}
-              >
-                <FontAwesomeIcon icon={faBookmark} />
-                <span className="pl-2">
-                  {saved ? "Đã lưu câu trả lời" : "Lưu câu trả lời"}
-                </span>
-              </div>
-            </Col>
-          </Row> */}
+              ) : (
+                <p className="text-sm text-black">{data.answer}</p>
+              )
+            ) : (
+              <p className="text-sm text-black">Không có dữ liệu hợp lệ</p>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -447,7 +413,7 @@ const Answer = () => {
               />
             </Col>
           </Row>
-          <Row gutter={16} className="h-5/6 w-full flex overflow-hide pl-2">
+          <Row gutter={16} className="h-fit w-full flex overflow-hide pl-2">
             <Col span={24}>
               <WarpCard data={dataAnswer} />
             </Col>

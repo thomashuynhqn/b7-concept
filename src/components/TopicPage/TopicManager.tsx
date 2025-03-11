@@ -383,7 +383,7 @@ const TopicManage: React.FC = () => {
   const dispatch = useDispatch();
   const [valueSearch, setValueSearch] = useState<string>("");
   const [topics, setTopics] = useState<TopicApi[]>([]);
-  const [subTopics, setSubTopics] = useState<TopicApi[]>([]);
+  // const [subTopics, setSubTopics] = useState<TopicApi[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTopicName, setNewTopicName] = useState<string>("");
 
@@ -393,7 +393,7 @@ const TopicManage: React.FC = () => {
   const [selectedParentTopicId, setSelectedParentTopicId] = useState<
     number | null
   >(null);
-  const [subSelectTopicId, setSubSelectTopicId] = useState<number | null>(null);
+  // const [subSelectTopicId, setSubSelectTopicId] = useState<number | null>(null);
 
   const [draggedSubTopic, setDraggedSubTopic] = useState<TopicApi | null>(null);
   const [sourceTopicId, setSourceTopicId] = useState<number | null>(null);
@@ -468,14 +468,12 @@ const TopicManage: React.FC = () => {
 
       let mId = "";
 
-      if (subSelectTopicId !== null) {
-        mId = subSelectTopicId !== null ? subSelectTopicId.toString() : "";
-      } else {
-        mId =
-          selectedParentTopicId !== null
-            ? selectedParentTopicId.toString()
-            : "";
-      }
+      // if (subSelectTopicId !== null) {
+      //   mId = subSelectTopicId !== null ? subSelectTopicId.toString() : "";
+      // } else {
+      mId =
+        selectedParentTopicId !== null ? selectedParentTopicId.toString() : "";
+      // }
       // const parentTopicId =
       //   selectedParentTopicId !== null ? selectedParentTopicId.toString() : "";
 
@@ -584,12 +582,12 @@ const TopicManage: React.FC = () => {
 
   const handleParentTopicChange = (value: number | null) => {
     setSelectedParentTopicId(value);
-    setSubTopics(topics.find((topic) => topic.id === value)?.children || []);
+    // setSubTopics(topics.find((topic) => topic.id === value)?.children || []);
   };
 
-  const handleSubTopicChange = (value: number | null) => {
-    setSubSelectTopicId(value);
-  };
+  // const handleSubTopicChange = (value: number | null) => {
+  //   setSubSelectTopicId(value);
+  // };
 
   return (
     <div className="h-full flex flex-col mt-5">

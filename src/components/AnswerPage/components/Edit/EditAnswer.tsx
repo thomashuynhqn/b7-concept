@@ -15,9 +15,7 @@ import {
 import TextEditor from "../../../../utils/RichTextEditor/Editor";
 import FileUpload from "../../../../utils/SharedComponents/FileUpload";
 import MediaPreview from "./MediaPreview";
-// import MediaPreview from "./MediaPreview";
 
-// Define types for specific fields
 interface Topic {
   id: number;
   name: string;
@@ -30,7 +28,7 @@ interface DataApi {
   answer: string;
   keywords: string[];
   like_count: number;
-  topic: Topic | string; // Topic could be a string or object based on data
+  topic: Topic | string;
   images: string[];
   videos: string[];
 }
@@ -100,10 +98,6 @@ const Edit = () => {
     async (id: string) => {
       try {
         for (const file of newImages) {
-          // const formData = new FormData();
-          // formData.append("image", file.originFileObj as File);
-
-          // Gọi hàm upload và đợi kết quả
           const imageUrl = await postUpLoadImage(
             id,
             file.originFileObj as File
@@ -127,17 +121,13 @@ const Edit = () => {
     async (user_id: string) => {
       try {
         for (const file of newVideos) {
-          // const formData = new FormData();
-          // formData.append("video", file.originFileObj as File);
-
-          // Gọi hàm upload và đợi kết quả
           const videoUrl = await postUploadVideo(
             user_id,
             file.originFileObj as File
           );
 
           if (videoUrl) {
-            setCurrentVideos((prevImages) => [...prevImages, videoUrl]);
+            setCurrentVideos((prevVideos) => [...prevVideos, videoUrl]);
             message.success("Video uploaded successfully!");
           } else {
             throw new Error("Video upload failed.");
@@ -206,7 +196,7 @@ const Edit = () => {
       <Row
         gutter={16}
         className="w-full flex justify-between items-center"
-        style={{ height: "10%" }} // Allocate 10% of the 80vh
+        style={{ height: "10%" }}
       >
         <Col span={12}>
           <Input
@@ -236,41 +226,43 @@ const Edit = () => {
       <Row
         gutter={16}
         className="w-full flex justify-between"
-        style={{ height: "60%" }} // Allocate 55% of the 80vh
+        style={{ height: "60%" }}
       >
         {/* Old Item Section */}
         <Col span={12} className="p-4">
-          <div className="h-full p-4 bg-[#F2F2F2] rounded-3xl">
+          <div className="p-4 bg-[#F2F2F2] rounded-3xl">
             <p className="text-black font-semibold text-base">
               Câu trả lời hiện tại
             </p>
-            <div className="h-full mt-2 overflow-hidden">
-              <p className="text-black text-sm">
-                {typeof dataEdit.answer === "string" ? (
-                  /<\/?[a-z][\s\S]*>/i.test(dataEdit.answer) ? (
-                    // Là HTML
-                    <div
-                      dangerouslySetInnerHTML={{ __html: dataEdit.answer }}
-                    />
-                  ) : (
-                    // Là chuỗi văn bản
-                    <p className="text-black text-sm">{dataEdit.answer}</p>
-                  )
+            {/* Set a max height so overflow triggers scrolling */}
+            <div
+              className="mt-2 overflow-y-auto"
+              style={{ maxHeight: "300px" }}
+            >
+              {typeof dataEdit.answer === "string" ? (
+                /<\/?[a-z][\s\S]*>/i.test(dataEdit.answer) ? (
+                  <div dangerouslySetInnerHTML={{ __html: dataEdit.answer }} />
                 ) : (
-                  <p className="text-black text-sm">Không có dữ liệu hợp lệ</p>
-                )}
-              </p>
+                  <p className="text-black text-sm">{dataEdit.answer}</p>
+                )
+              ) : (
+                <p className="text-black text-sm">Không có dữ liệu hợp lệ</p>
+              )}
             </div>
           </div>
         </Col>
 
         {/* New Item Section */}
         <Col span={12} className="p-4">
-          <div className="h-full p-4 border-2 border-[#BFBFBF] rounded-3xl">
+          <div className="p-4 border-2 border-[#BFBFBF] rounded-3xl">
             <p className="text-black font-semibold text-base">
               Câu trả lời mới
             </p>
-            <div className="h-full mt-2">
+            {/* Same fixed max-height for scroll */}
+            <div
+              className="mt-2 overflow-y-auto"
+              style={{ maxHeight: "300px" }}
+            >
               <TextEditor
                 toolbarWidth="100%"
                 editorHeight="100%"
@@ -286,7 +278,7 @@ const Edit = () => {
       <Row
         gutter={16}
         className="w-full flex justify-between"
-        style={{ height: "30%" }} // Allocate 35% of the 80vh
+        style={{ height: "30%" }}
       >
         {/* Old Media Section */}
         <Col span={12} className="p-4">
@@ -299,32 +291,6 @@ const Edit = () => {
               dataEdit?.videos?.length === 0 ? (
                 <div className="text-sm">Chưa có hình ảnh, video</div>
               ) : (
-                // <div className="flex gap-2 flex-wrap">
-                //   {dataEdit.images.map((image, index) => (
-                //     <div
-                //       key={index}
-                //       className="w-14 h-14 rounded-lg flex-shrink-0"
-                //     >
-                //       <Image
-                //         src={image}
-                //         alt="Image"
-                //         className="w-full h-full object-cover rounded-lg"
-                //       />
-                //     </div>
-                //   ))}
-                //   {dataEdit.videos.map((video, index) => (
-                //     <div
-                //       key={index}
-                //       className="w-14 h-14 rounded-lg flex-shrink-0"
-                //     >
-                //       <video
-                //         src={video}
-                //         className="w-full h-full object-cover rounded-lg"
-                //         controls
-                //       />
-                //     </div>
-                //   ))}
-                // </div>
                 <MediaPreview dataEdit={dataEdit} />
               )}
             </div>

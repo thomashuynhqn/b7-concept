@@ -1,25 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  Button,
-  Checkbox,
-  Col,
-  Input,
-  Menu,
-  MenuProps,
-  message,
-  Row,
-  Spin,
-} from "antd";
+import { Button, Checkbox, Col, Input, Menu, MenuProps, Row, Spin } from "antd";
 import React, { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom"; // Import useNavigate
-import { postAddResultToTopic } from "../../../../api/api";
-import {
-  clearLoading,
-  openLoading,
-} from "../../../../redux/slices/loadingSlice";
-import { useDispatch } from "react-redux";
 
 // Define types
 
