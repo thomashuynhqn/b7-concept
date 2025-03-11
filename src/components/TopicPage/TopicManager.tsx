@@ -271,7 +271,7 @@ const WarpCard: React.FC<WarpCardProps> = ({
             // >
             <div
               className="flex justify-between items-center w-full cursor-pointer hover:text-blue-700"
-              draggable
+              // draggable
               onClick={(e) => {
                 e.stopPropagation();
                 handleOpenQuestionModal(child);
