@@ -48,7 +48,8 @@ type TopicChild_v2 = {
 
 interface WarpCardProps {
   data: TopicApi[];
-  topicSelected: string;
+  topic: string;
+  handleAddResultToTopic: (topic: string) => void;
 }
 
 interface WarpCardProps2 {
@@ -107,11 +108,11 @@ const recursiveSearch = (topic: TopicApi, searchText: string): boolean => {
 // Card Component
 const WarpCard: React.FC<
   WarpCardProps2 & {
-    selectedKey: string | null;
-    setSelectedKey: (key: string | null) => void;
-    topicSelected: string | null;
+    selectTopic: string;
+    setSelectedTopic: (key: string) => void;
+    topic: string | null;
   }
-> = ({ data, selectedKey, setSelectedKey, topicSelected }) => {
+> = ({ data, selectTopic, setSelectedTopic, topic }) => {
   const [openKeys, setOpenKeys] = useState<string[]>([]);
 
   const handleOpenChange = (keys: string[]) => {
@@ -119,7 +120,7 @@ const WarpCard: React.FC<
   };
 
   const handleCheckboxChange = (key: string) => {
-    setSelectedKey(key); // Nếu đã chọn thì bỏ chọn, nếu chưa thì chọn mới
+    setSelectedTopic(key); // Nếu đã chọn thì bỏ chọn, nếu chưa thì chọn mới
   };
 
   const menuItems: MenuItem[] = [
@@ -144,9 +145,9 @@ const WarpCard: React.FC<
         label: (
           <span className="font-bold">
             <Checkbox
-              disabled={topicSelected !== null}
+              disabled={topic !== ""}
               className="pr-2"
-              checked={selectedKey === `${subTopic.id}`}
+              checked={selectTopic.toString() === subTopic.id.toString()}
               onChange={(e) => {
                 e.stopPropagation();
                 handleCheckboxChange(`${subTopic.id}`);
@@ -194,21 +195,15 @@ const WarpCard: React.FC<
 };
 
 // Main Component
-const WarpTopic: React.FC<WarpCardProps> = ({ data, topicSelected }) => {
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+const WarpTopic: React.FC<WarpCardProps> = ({
+  data,
+  topic,
+  handleAddResultToTopic,
+}) => {
   const [loading, setLoading] = useState(true);
   const [topics, setTopics] = useState<TopicApi[]>(data);
   const [filteredTopics, setFilteredTopics] = useState<TopicApi[]>(data);
-
-  const [selectedKey, setSelectedKey] = useState<string | null>(topicSelected);
-
-  const [searchParams] = useSearchParams();
-  const id = searchParams.get("id");
-
-  useEffect(() => {
-    setSelectedKey(topicSelected);
-  }, [topicSelected]);
+  const [selectTopic, setSelectedTopic] = useState<string>("");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -230,29 +225,6 @@ const WarpTopic: React.FC<WarpCardProps> = ({ data, topicSelected }) => {
     }
   };
 
-  const handleAddResultToTopic = () => {
-    if (selectedKey) {
-      const requestBody = {
-        question_answer_pair_id: id,
-      };
-      dispatch(openLoading());
-      postAddResultToTopic(requestBody, selectedKey)
-        .then(() => {
-          dispatch(clearLoading());
-          topicSelected = selectedKey;
-
-          message.success("The result has been added to the topic.");
-          // navigate("/topic");
-        })
-        .catch((error) => {
-          dispatch(clearLoading());
-          console.error("Error adding result to topic:", error);
-        });
-    } else {
-      message.error("Vui lòng chọn một topic!");
-    }
-  };
-
   if (loading) {
     return (
       <div className="w-full h-full flex justify-center items-center">
@@ -260,6 +232,17 @@ const WarpTopic: React.FC<WarpCardProps> = ({ data, topicSelected }) => {
       </div>
     );
   }
+
+  const handleGetTopicName = (topicId: string) => {
+    for (const item of topics) {
+      for (const subTopic of item.children) {
+        if (subTopic.id.toString() === topicId.toString()) {
+          return `${item.name} - ${subTopic.name}`;
+        }
+      }
+    }
+    return "";
+  };
 
   return (
     <div className="w-full h-full">
@@ -269,13 +252,13 @@ const WarpTopic: React.FC<WarpCardProps> = ({ data, topicSelected }) => {
       <div className="w-full h-[60vh] flex flex-col bg-white p-5 rounded-3xl">
         <div className="h-5/6 overflow-auto overflow-x-hidden py-3 pl-3 pr-6 rounded-3xl">
           {filteredTopics.length > 0 ? (
-            filteredTopics.map((topic) => (
+            filteredTopics.map((topicData) => (
               <WarpCard
-                key={topic.id}
-                data={topic}
-                selectedKey={selectedKey}
-                setSelectedKey={setSelectedKey}
-                topicSelected={topicSelected}
+                key={topicData.id}
+                data={topicData}
+                topic={topic}
+                selectTopic={selectTopic}
+                setSelectedTopic={setSelectedTopic}
               />
             ))
           ) : (
@@ -284,16 +267,20 @@ const WarpTopic: React.FC<WarpCardProps> = ({ data, topicSelected }) => {
             </div>
           )}
         </div>
-        {topicSelected == null && (
+        {topic == "" ? (
           <div className="flex flex-row justify-between">
             <div></div>
             <Button
               type="primary"
               className="w-1/4 mt-7"
-              onClick={handleAddResultToTopic} // Navigate to "/topic"
+              onClick={() => handleAddResultToTopic(selectTopic)} // Navigate to "/topic"
             >
               Thêm vào topic
             </Button>
+          </div>
+        ) : (
+          <div className="flex flex-row justify-center w-full">
+            {"Đã thêm vào topic: " + handleGetTopicName(topic)}{" "}
           </div>
         )}
       </div>
