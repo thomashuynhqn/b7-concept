@@ -157,8 +157,8 @@ const WarpCard: React.FC<WarpCardProps> = ({
       label: (
         <div
           className="flex justify-between items-center"
-          draggable
-          onDragStart={() => onDragStart(data, data.id)}
+          // draggable
+          // onDragStart={() => onDragStart(data, data.id)}
           onDragOver={onDragOver}
           onDrop={() => onDrop(data.id)}
         >
@@ -277,9 +277,7 @@ const WarpCard: React.FC<WarpCardProps> = ({
                 handleOpenQuestionModal(child);
               }}
             >
-              <span className="font-bold truncate max-w-[70%]">
-                {child.question}
-              </span>
+              <span className="truncate max-w-[70%]">{child.question}</span>
               {/* </div> */}
             </div>
           ),
@@ -385,7 +383,7 @@ const TopicManage: React.FC = () => {
   const dispatch = useDispatch();
   const [valueSearch, setValueSearch] = useState<string>("");
   const [topics, setTopics] = useState<TopicApi[]>([]);
-  const [subTopics, setSubTopics] = useState<TopicApi[]>([]);
+  // const [subTopics, setSubTopics] = useState<TopicApi[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTopicName, setNewTopicName] = useState<string>("");
 
@@ -395,7 +393,7 @@ const TopicManage: React.FC = () => {
   const [selectedParentTopicId, setSelectedParentTopicId] = useState<
     number | null
   >(null);
-  const [subSelectTopicId, setSubSelectTopicId] = useState<number | null>(null);
+  // const [subSelectTopicId, setSubSelectTopicId] = useState<number | null>(null);
 
   const [draggedSubTopic, setDraggedSubTopic] = useState<TopicApi | null>(null);
   const [sourceTopicId, setSourceTopicId] = useState<number | null>(null);
@@ -470,14 +468,12 @@ const TopicManage: React.FC = () => {
 
       let mId = "";
 
-      if (subSelectTopicId !== null) {
-        mId = subSelectTopicId !== null ? subSelectTopicId.toString() : "";
-      } else {
-        mId =
-          selectedParentTopicId !== null
-            ? selectedParentTopicId.toString()
-            : "";
-      }
+      // if (subSelectTopicId !== null) {
+      //   mId = subSelectTopicId !== null ? subSelectTopicId.toString() : "";
+      // } else {
+      mId =
+        selectedParentTopicId !== null ? selectedParentTopicId.toString() : "";
+      // }
       // const parentTopicId =
       //   selectedParentTopicId !== null ? selectedParentTopicId.toString() : "";
 
@@ -559,7 +555,8 @@ const TopicManage: React.FC = () => {
 
           // setTopics(updatedTopics);
           dispatch(clearLoading());
-          fetchTopics();
+          window.location.reload(); //tam de vay de cap nhat lai data
+          // fetchTopics();
         })
         .catch((e) => {
           dispatch(clearLoading());
@@ -585,12 +582,12 @@ const TopicManage: React.FC = () => {
 
   const handleParentTopicChange = (value: number | null) => {
     setSelectedParentTopicId(value);
-    setSubTopics(topics.find((topic) => topic.id === value)?.children || []);
+    // setSubTopics(topics.find((topic) => topic.id === value)?.children || []);
   };
 
-  const handleSubTopicChange = (value: number | null) => {
-    setSubSelectTopicId(value);
-  };
+  // const handleSubTopicChange = (value: number | null) => {
+  //   setSubSelectTopicId(value);
+  // };
 
   return (
     <div className="h-full flex flex-col mt-5">
@@ -691,7 +688,7 @@ const TopicManage: React.FC = () => {
               ))}
             </Select>
 
-            <Select
+            {/* <Select
               className="w-full mb-4"
               placeholder="Select parent topic (optional)"
               value={subSelectTopicId}
@@ -704,7 +701,7 @@ const TopicManage: React.FC = () => {
                   {topic.name}
                 </Option>
               ))}
-            </Select>
+            </Select> */}
 
             <button
               className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all"
@@ -713,7 +710,7 @@ const TopicManage: React.FC = () => {
               Add Topic
             </button>
             <button
-              className="mt-4 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all"
+              className="mt-4 ml-4 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all"
               onClick={() => setIsModalOpen(false)}
             >
               Cancel

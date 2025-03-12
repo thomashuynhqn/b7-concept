@@ -7,7 +7,7 @@ import {
   faX,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, Col, Input, Row } from "antd";
+import { Button, Col, Input, message, Row } from "antd";
 import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -15,6 +15,7 @@ import {
   // getLikeAndSaveResult,
   getResultsByID,
   getTopic,
+  postAddResultToTopic,
 } from "../../api/api";
 import { clearLoading, openLoading } from "../../redux/slices/loadingSlice";
 import WarpChatAi from "./components/ChatAI/ChatContainer";
@@ -41,6 +42,7 @@ interface WarpCardProps {
 interface WarpCardProps2 {
   data: TopicApi[];
   topic: string;
+  handleAddResultToTopic: (topic: string) => void;
 }
 
 type TopicApi = {
@@ -105,11 +107,36 @@ const Answer = () => {
   // const [saved, setSaved] = React.useState(true);
 
   const navigate = useNavigate();
+
+  const id = searchParams.get("id");
+
   const [topics, setTopics] = React.useState<TopicApi[]>([]);
 
   const [tabs, setTabs] = React.useState("image");
 
   const [isOpenTabAI, setIsOpenTabAI] = React.useState(false);
+
+  const [topicId, setTopicId] = React.useState<string>("");
+  const handleAddResultToTopic = (topic: string) => {
+    if (topic) {
+      const requestBody = {
+        question_answer_pair_id: id,
+      };
+      dispatch(openLoading());
+      postAddResultToTopic(requestBody, topic)
+        .then(() => {
+          dispatch(clearLoading());
+          setTopicId(topic);
+          message.success("The result has been added to the topic.");
+        })
+        .catch((error) => {
+          dispatch(clearLoading());
+          console.error("Error adding result to topic:", error);
+        });
+    } else {
+      message.error("Vui lòng chọn một topic!");
+    }
+  };
 
   const handleSearch = (searchType: string) => {
     if (searchType === "normal") {
@@ -144,13 +171,12 @@ const Answer = () => {
     dispatch(openLoading());
     getResultsByID(Number(_id))
       .then((res) => {
-        console.log("🚀 ~ getResultsByID ~ res:", res);
         setValueSearch(res?.data?.question);
         setDataAnswer(res.data);
+        setTopicId(res.data.topic || "");
         dispatch(clearLoading());
       })
-      .catch((err) => {
-        console.log("🚀 ~ getResultsByID ~ err:", err);
+      .catch(() => {
         dispatch(clearLoading());
       });
   }, [searchParams, dispatch]);
@@ -319,8 +345,18 @@ const Answer = () => {
     return <WarpKeyWord id={dataAnswer.id} />;
   };
 
-  const WarpTopics: React.FC<WarpCardProps2> = ({ data, topic }) => {
-    return <WarpTopic data={data} topicSelected={topic} />;
+  const WarpTopics: React.FC<WarpCardProps2> = ({
+    data,
+    topic,
+    handleAddResultToTopic,
+  }) => {
+    return (
+      <WarpTopic
+        data={data}
+        topic={topic}
+        handleAddResultToTopic={handleAddResultToTopic}
+      />
+    );
   };
 
   return (
@@ -537,7 +573,11 @@ const Answer = () => {
                 ) : tabs === "keyword" ? (
                   <WarpKeyword />
                 ) : (
-                  <WarpTopics data={topics} topic={dataAnswer.topic} />
+                  <WarpTopics
+                    data={topics}
+                    topic={topicId}
+                    handleAddResultToTopic={handleAddResultToTopic}
+                  />
                 )}
               </Col>
             </Row>
