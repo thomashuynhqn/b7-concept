@@ -22,7 +22,7 @@ interface Topic {
   description: string;
 }
 
-interface DataApi {
+export interface DataApi {
   id: number;
   question: string;
   answer: string;
@@ -50,14 +50,17 @@ const Edit = () => {
     images: [],
     videos: [],
   });
-  console.log("🚀 ~ Edit ~ dataEdit:", dataEdit);
 
-  const [editedContent, setEditedContent] = useState(""); // State for edited content
-  const [currentImages, setCurrentImages] = useState<string[]>([]); // State to track current images
-  const [currentVideos, setCurrentVideos] = useState<string[]>([]); // State to track current videos
-  const [newImages, setNewImages] = useState<UploadFile[]>([]); // State to track new images uploaded
-  const [newVideos, setNewVideos] = useState<UploadFile[]>([]); // State to track new videos uploaded
+  const [editedContent, setEditedContent] = useState(""); // Edited answer content
+
+  // Store new media files selected by the user
+  const [newImages, setNewImages] = useState<UploadFile[]>([]);
+  const [newVideos, setNewVideos] = useState<UploadFile[]>([]);
   const _id = searchParams.get("id");
+
+  // State to track which old images and videos are marked for exclusion
+  const [deletedImages, setDeletedImages] = useState<string[]>([]);
+  const [deletedVideos, setDeletedVideos] = useState<string[]>([]);
 
   useEffect(() => {
     if (!_id) {
@@ -68,11 +71,9 @@ const Edit = () => {
     dispatch(openLoading());
     getResultsByID(Number(_id))
       .then((res) => {
-        const fetchedData: DataApi = res.data; // Ensure type safety
+        const fetchedData: DataApi = res.data;
         setDataEdit(fetchedData);
-        setEditedContent(fetchedData.answer); // Initialize with the current answer
-        setCurrentImages(fetchedData.images); // Initialize current images
-        setCurrentVideos(fetchedData.videos); // Initialize current videos
+        setEditedContent(fetchedData.answer);
         dispatch(clearLoading());
       })
       .catch((err) => {
@@ -94,17 +95,30 @@ const Edit = () => {
     setNewVideos(videos);
   };
 
+  // Toggle deletion state for an image
+  const handleToggleDeleteImage = (url: string) => {
+    setDeletedImages((prev) =>
+      prev.includes(url) ? prev.filter((item) => item !== url) : [...prev, url]
+    );
+  };
+
+  // Toggle deletion state for a video
+  const handleToggleDeleteVideo = (url: string) => {
+    setDeletedVideos((prev) =>
+      prev.includes(url) ? prev.filter((item) => item !== url) : [...prev, url]
+    );
+  };
+
+  // Upload new images and return the URLs
   const uploadImages = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<string[]> => {
       try {
-        // Kiểm tra kích thước file trước khi upload
         for (const file of newImages) {
           if ((file.originFileObj as File).size > 15 * 1024 * 1024) {
             message.error(`Image ${file.name} exceeds 15MB limit.`);
-            throw new Error("Image size exceeds limit."); // Dừng tiến trình
+            throw new Error("Image size exceeds limit.");
           }
         }
-
         const uploadedUrls = await Promise.all(
           newImages.map(async (file) => {
             const imageUrl = await postUpLoadImage(
@@ -115,26 +129,26 @@ const Edit = () => {
             return imageUrl;
           })
         );
-
-        setCurrentImages((prevImages) => [...prevImages, ...uploadedUrls]);
         message.success("All images uploaded successfully!");
+        return uploadedUrls;
       } catch (error) {
         message.error("One or more images failed to upload.");
+        throw error;
       }
     },
     [newImages]
   );
 
+  // Upload new videos and return the URLs
   const uploadVideos = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<string[]> => {
       try {
         for (const file of newVideos) {
           if ((file.originFileObj as File).size > 15 * 1024 * 1024) {
             message.error(`Video ${file.name} exceeds 15MB limit.`);
-            throw new Error("Video size exceeds limit."); // Dừng tiến trình
+            throw new Error("Video size exceeds limit.");
           }
         }
-
         const uploadedUrls = await Promise.all(
           newVideos.map(async (file) => {
             const videoUrl = await postUploadVideo(
@@ -145,11 +159,11 @@ const Edit = () => {
             return videoUrl;
           })
         );
-
-        setCurrentVideos((prevVideos) => [...prevVideos, ...uploadedUrls]);
         message.success("All videos uploaded successfully!");
+        return uploadedUrls;
       } catch (error) {
-        message.error("One or more video failed to upload.");
+        message.error("One or more videos failed to upload.");
+        throw error;
       }
     },
     [newVideos]
@@ -161,23 +175,36 @@ const Edit = () => {
 
     if (!user_id) {
       message.error("User ID not found. Please log in again.");
+      dispatch(clearLoading());
       return;
     }
 
     try {
+      // Upload new media files if any
+      let newUploadedImages: string[] = [];
+      let newUploadedVideos: string[] = [];
+
       if (newImages.length > 0) {
-        await uploadImages(dataEdit.id.toString()); // Nếu lỗi thì dừng
+        newUploadedImages = await uploadImages(dataEdit.id.toString());
       }
-
       if (newVideos.length > 0) {
-        await uploadVideos(dataEdit.id.toString()); // Nếu lỗi thì dừng
+        newUploadedVideos = await uploadVideos(dataEdit.id.toString());
       }
 
+      // Exclude the media that have been marked for deletion
+      const remainingImages = dataEdit.images.filter(
+        (url) => !deletedImages.includes(url)
+      );
+      const remainingVideos = dataEdit.videos.filter(
+        (url) => !deletedVideos.includes(url)
+      );
+
+      // Build the request body with the remaining media and new uploads.
       const requestBody = {
         ...dataEdit,
         answer: editedContent,
-        images: currentImages,
-        videos: currentVideos,
+        images: [...remainingImages, ...newUploadedImages],
+        videos: [...remainingVideos, ...newUploadedVideos],
         userid: user_id,
       };
 
@@ -192,12 +219,14 @@ const Edit = () => {
   }, [
     dataEdit,
     editedContent,
-    currentImages,
-    currentVideos,
     newImages,
     newVideos,
+    deletedImages,
+    deletedVideos,
     dispatch,
     navigate,
+    uploadImages,
+    uploadVideos,
   ]);
 
   return (
@@ -248,7 +277,6 @@ const Edit = () => {
             <p className="text-black font-semibold text-base">
               Câu trả lời hiện tại
             </p>
-            {/* Set a max height so overflow triggers scrolling */}
             <div
               className="mt-2 overflow-y-auto"
               style={{ maxHeight: "300px" }}
@@ -272,7 +300,6 @@ const Edit = () => {
             <p className="text-black font-semibold text-base">
               Câu trả lời mới
             </p>
-            {/* Same fixed max-height for scroll */}
             <div
               className="mt-2 overflow-y-auto"
               style={{ maxHeight: "300px" }}
@@ -288,7 +315,7 @@ const Edit = () => {
         </Col>
       </Row>
 
-      {/* Media Section (Old and New Media) */}
+      {/* Media Section */}
       <Row
         gutter={16}
         className="w-full flex justify-between"
@@ -300,14 +327,13 @@ const Edit = () => {
             <p className="text-black font-semibold text-base">
               Hình ảnh, video hiện tại
             </p>
-            <div className="h-full mt-2 flex gap-2 flex-wrap overflow-hidden">
-              {dataEdit?.images?.length === 0 &&
-              dataEdit?.videos?.length === 0 ? (
-                <div className="text-sm">Chưa có hình ảnh, video</div>
-              ) : (
-                <MediaPreview dataEdit={dataEdit} />
-              )}
-            </div>
+            <MediaPreview
+              dataEdit={dataEdit}
+              deletedImages={deletedImages}
+              deletedVideos={deletedVideos}
+              onDeleteImage={handleToggleDeleteImage}
+              onDeleteVideo={handleToggleDeleteVideo}
+            />
           </div>
         </Col>
 
@@ -318,11 +344,7 @@ const Edit = () => {
               Hình ảnh, video mới
             </p>
             <div className="h-full mt-2">
-              <FileUpload
-                onChange={(images: UploadFile[], videos: UploadFile[]) => {
-                  handleFileUploadChange(images, videos);
-                }}
-              />
+              <FileUpload onChange={handleFileUploadChange} />
             </div>
           </div>
         </Col>
