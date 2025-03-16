@@ -64,7 +64,7 @@ const WarpCard: React.FC<WarpCardProps> = ({
   onDragOver,
   onDrop,
 }) => {
-  const [openKeys, setOpenKeys] = React.useState<string[]>([]);
+  const [openKeys, setOpenKeys] = useState<string[]>([]);
   const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [newTopicName, setNewTopicName] = useState<string>("");
@@ -118,20 +118,8 @@ const WarpCard: React.FC<WarpCardProps> = ({
   const handleSaveSubTopicName = () => {
     if (editSubTopicId !== null && newSubTopicName !== "") {
       dispatch(openLoading());
-
       postRenameTopic(editSubTopicId.toString(), newSubTopicName)
         .then(() => {
-          // const updatedSubTopics = data.children.map((subTopic) => {
-          //   if (subTopic.id === editSubTopicId) {
-          //     return { ...subTopic, name: newSubTopicName };
-          //   }
-          //   return subTopic;
-          // });
-
-          // onChangeSubTopicName(data.id, editSubTopicId, newSubTopicName);
-
-          // data.children = updatedSubTopics;
-
           dispatch(clearLoading());
           onChangeSubTopicName(data.id, editSubTopicId, newSubTopicName);
           setIsModalOpen(false);
@@ -157,8 +145,6 @@ const WarpCard: React.FC<WarpCardProps> = ({
       label: (
         <div
           className="flex justify-between items-center"
-          // draggable
-          // onDragStart={() => onDragStart(data, data.id)}
           onDragOver={onDragOver}
           onDrop={() => onDrop(data.id)}
         >
@@ -166,16 +152,7 @@ const WarpCard: React.FC<WarpCardProps> = ({
             className="font-bold text-lg cursor-pointer"
             onClick={toggleOpen}
           >
-            {/* <div
-              className="flex justify-between items-center w-full cursor-pointer hover:text-blue-700"
-              draggable
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOpenQuestionModal(data);
-              }}
-            > */}
             {data.name}
-            {/* </div> */}
           </span>
           <Popover
             content={
@@ -214,23 +191,13 @@ const WarpCard: React.FC<WarpCardProps> = ({
             onDragOver={onDragOver}
             onDrop={() => onDrop(subTopic.id)}
           >
-            {/* <div
-              className="flex justify-between items-center w-full cursor-pointer hover:text-blue-700"
-              draggable
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOpenQuestionModal(subTopic);
-              }}
-            > */}
             <span className="font-bold truncate max-w-[70%]">
               {subTopic.name}
             </span>
-            {/* </div> */}
             <div className="flex items-center space-x-2 min-w-[200px] justify-end">
               <span className="text-[#595959] text-sm border border-[#595959] rounded-2xl px-2 py-1 font-extralight">
                 Tổng số câu hỏi ({subTopic.question_answer_pairs.length})
               </span>
-
               <Popover
                 content={
                   <div>
@@ -262,23 +229,14 @@ const WarpCard: React.FC<WarpCardProps> = ({
         children: subTopic.question_answer_pairs.map((child) => ({
           key: `question-${child.id}`,
           label: (
-            // <div
-            //   className="flex justify-between items-center w-full"
-            //   draggable
-            //   onDragStart={() => onDragStart(child, child.id)}
-            //   onDragOver={onDragOver}
-            //   onDrop={() => onDrop(child.id)}
-            // >
             <div
               className="flex justify-between items-center w-full cursor-pointer hover:text-blue-700"
-              // draggable
               onClick={(e) => {
                 e.stopPropagation();
                 handleOpenQuestionModal(child);
               }}
             >
               <span className="truncate max-w-[70%]">{child.question}</span>
-              {/* </div> */}
             </div>
           ),
         })),
@@ -383,17 +341,15 @@ const TopicManage: React.FC = () => {
   const dispatch = useDispatch();
   const [valueSearch, setValueSearch] = useState<string>("");
   const [topics, setTopics] = useState<TopicApi[]>([]);
-  // const [subTopics, setSubTopics] = useState<TopicApi[]>([]);
+  const [filteredTopics, setFilteredTopics] = useState<TopicApi[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTopicName, setNewTopicName] = useState<string>("");
-
   const [errorMessage, setErrorMessage] = useState("");
 
   // Dropdown state for selecting parent topic
   const [selectedParentTopicId, setSelectedParentTopicId] = useState<
     number | null
   >(null);
-  // const [subSelectTopicId, setSubSelectTopicId] = useState<number | null>(null);
 
   const [draggedSubTopic, setDraggedSubTopic] = useState<TopicApi | null>(null);
   const [sourceTopicId, setSourceTopicId] = useState<number | null>(null);
@@ -405,8 +361,9 @@ const TopicManage: React.FC = () => {
   const fetchTopics = () => {
     dispatch(openLoading());
     getTopic()
-      .then((topic) => {
-        setTopics(topic.data);
+      .then((response) => {
+        setTopics(response.data);
+        setFilteredTopics(response.data);
         dispatch(clearLoading());
       })
       .catch(() => {
@@ -414,36 +371,40 @@ const TopicManage: React.FC = () => {
       });
   };
 
-  const handleDelete = (
-    id: number
-    // isSubTopic: boolean,
-    // parentTopicId?: number
-  ) => {
-    dispatch(openLoading());
+  // Filter topics and subtopics when the search input has 2 or more characters
+  useEffect(() => {
+    if (valueSearch.trim().length >= 2) {
+      const searchValue = valueSearch.toLowerCase();
+      const filtered = topics
+        .map((topic) => {
+          const topicMatches = topic.name.toLowerCase().includes(searchValue);
+          const filteredChildren = topic.children.filter((subTopic) =>
+            subTopic.name.toLowerCase().includes(searchValue)
+          );
+          if (topicMatches) {
+            // If the topic matches, include all its children
+            return topic;
+          } else if (filteredChildren.length > 0) {
+            // If only some subtopics match, include the topic with filtered children
+            return { ...topic, children: filteredChildren };
+          } else {
+            return null;
+          }
+        })
+        .filter((topic) => topic !== null) as TopicApi[];
+      setFilteredTopics(filtered);
+    } else {
+      setFilteredTopics(topics);
+    }
+  }, [valueSearch, topics]);
 
+  // Updated handleDelete function to reload the page after successful deletion
+  const handleDelete = (id: number) => {
+    dispatch(openLoading());
     postDeleteTopic(id)
       .then(() => {
-        // If deleting a subtopic, update the corresponding topic's children
-        // if (isSubTopic && parentTopicId) {
-        //   const updatedTopics = topics.map((topic) => {
-        //     if (topic.id === parentTopicId) {
-        //       return {
-        //         ...topic,
-        //         children: topic.children.filter(
-        //           (subTopic) => subTopic.id !== id
-        //         ),
-        //       };
-        //     }
-        //     return topic;
-        //   });
-        //   setTopics(updatedTopics);
-        // } else {
-        //   // If deleting a topic, filter it out from the main topics list
-        //   setTopics(topics.filter((topic) => topic.id !== id));
-        // }
-
-        fetchTopics();
         dispatch(clearLoading());
+        window.location.reload();
       })
       .catch((e) => {
         dispatch(clearLoading());
@@ -465,18 +426,8 @@ const TopicManage: React.FC = () => {
       return;
     } else {
       dispatch(openLoading());
-
-      let mId = "";
-
-      // if (subSelectTopicId !== null) {
-      //   mId = subSelectTopicId !== null ? subSelectTopicId.toString() : "";
-      // } else {
-      mId =
+      let mId =
         selectedParentTopicId !== null ? selectedParentTopicId.toString() : "";
-      // }
-      // const parentTopicId =
-      //   selectedParentTopicId !== null ? selectedParentTopicId.toString() : "";
-
       postAddNewTopic(newTopicName, mId)
         .then((response) => {
           const newTopic: TopicApi = {
@@ -487,7 +438,6 @@ const TopicManage: React.FC = () => {
           };
 
           let updatedTopics;
-
           if (selectedParentTopicId) {
             updatedTopics = topics.map((topic) => {
               if (topic.id === selectedParentTopicId) {
@@ -528,35 +478,12 @@ const TopicManage: React.FC = () => {
   const handleMoveSubTopic = (newParentId: number | null) => {
     if (draggedSubTopic && sourceTopicId !== null) {
       dispatch(openLoading());
-
-      // Ensure resolvedParentId is valid or fallback to sourceTopicId if it's null
       const resolvedParentId =
         newParentId !== null ? newParentId : sourceTopicId;
-
       postMoveTopic(draggedSubTopic.id.toString(), resolvedParentId)
         .then(() => {
-          // let updatedTopics = topics.map((topic) => {
-          //   if (topic.id === sourceTopicId) {
-          //     return {
-          //       ...topic,
-          //       children: topic.children.filter(
-          //         (subTopic) => subTopic.id !== draggedSubTopic.id
-          //       ),
-          //     };
-          //   }
-          //   if (topic.id === resolvedParentId) {
-          //     return {
-          //       ...topic,
-          //       children: [...topic.children, draggedSubTopic],
-          //     };
-          //   }
-          //   return topic;
-          // });
-
-          // setTopics(updatedTopics);
           dispatch(clearLoading());
-          window.location.reload(); //tam de vay de cap nhat lai data
-          // fetchTopics();
+          window.location.reload();
         })
         .catch((e) => {
           dispatch(clearLoading());
@@ -582,12 +509,7 @@ const TopicManage: React.FC = () => {
 
   const handleParentTopicChange = (value: number | null) => {
     setSelectedParentTopicId(value);
-    // setSubTopics(topics.find((topic) => topic.id === value)?.children || []);
   };
-
-  // const handleSubTopicChange = (value: number | null) => {
-  //   setSubSelectTopicId(value);
-  // };
 
   return (
     <div className="h-full flex flex-col mt-5">
@@ -627,8 +549,8 @@ const TopicManage: React.FC = () => {
         </div>
       </div>
       <div className="w-full bg-white rounded-2xl py-4">
-        <div className="overflow-auto]">
-          {topics.map((topic) => (
+        <div className="overflow-auto">
+          {filteredTopics.map((topic) => (
             <WarpCard
               key={topic.id}
               data={topic}
@@ -657,7 +579,6 @@ const TopicManage: React.FC = () => {
           <p>Di chuyển vào đây để thành topic tổng</p>
         </div>
       )}
-      {/* Modal Popup for Adding Topic */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-gray-800 bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-8 rounded-xl shadow-lg w-1/2">
@@ -669,10 +590,9 @@ const TopicManage: React.FC = () => {
               value={newTopicName}
               onChange={(e) => setNewTopicName(e.target.value)}
             />
-            {errorMessage && ( // Hiển thị thông báo lỗi nếu có
+            {errorMessage && (
               <p className="text-red-500 text-sm mb-4">{errorMessage}</p>
             )}
-            {/* Dropdown to select parent topic */}
             <Select
               className="w-full mb-4"
               placeholder="Select parent topic (optional)"
@@ -687,22 +607,6 @@ const TopicManage: React.FC = () => {
                 </Option>
               ))}
             </Select>
-
-            {/* <Select
-              className="w-full mb-4"
-              placeholder="Select parent topic (optional)"
-              value={subSelectTopicId}
-              onChange={handleSubTopicChange}
-              allowClear
-            >
-              <Option value={null}>None</Option>
-              {subTopics.map((topic) => (
-                <Option key={topic.id} value={topic.id}>
-                  {topic.name}
-                </Option>
-              ))}
-            </Select> */}
-
             <button
               className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all"
               onClick={handleCreateNewTopic}
