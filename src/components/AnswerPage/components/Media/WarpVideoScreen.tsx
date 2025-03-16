@@ -63,7 +63,7 @@ const WrapVideoScreen: React.FC<WarpVideoProps> = ({ data }) => {
   return (
     <div className="h-[70vh] w-full overflow-y-auto overflow-x-hidden">
       <Row gutter={16}>
-        {data ? (
+        {data !== null && data.length > 0 ? (
           data?.map((item, index) => (
             <Col span={24} key={index}>
               <WarpCard data={item} />
