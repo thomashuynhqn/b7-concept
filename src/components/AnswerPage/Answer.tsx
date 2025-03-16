@@ -494,6 +494,23 @@ const Answer = () => {
                       />
                     </div>
                   </Col>
+                  <Col span={6}>
+                    <div
+                      className="bg-[#BFBFBF] h-px w-9 mb-5"
+                      style={{ marginLeft: -5 }}
+                    ></div>
+                    <div className="text-white text-2xl w-[25px] h-[35px]">
+                      <img
+                        src="/Topic.svg"
+                        className={"w-full h-full cursor-pointer"}
+                        style={tabs === "topic" ? boldType : normalType}
+                        onClick={() => {
+                          setTabs("topic");
+                          setIsOpenTabAI(true);
+                        }}
+                      />
+                    </div>
+                  </Col>
                 </>
               ) : null}
               <div className="absolute text-black bottom-20 left-0 cursor-pointer">

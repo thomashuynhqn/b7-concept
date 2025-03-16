@@ -130,7 +130,7 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
                 className="bg-[#F5F9FF] h-full mt-3 rounded-3xl overflow-x-auto whitespace-nowrap"
                 style={{ maxHeight: "150px" }}
               >
-                {data.old_object.images.map((img, index) => (
+                {data.new_object.images.map((img, index) => (
                   <img
                     key={index}
                     src={img}
@@ -138,7 +138,7 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
                     className="inline-block w-24 h-24 object-cover mr-2"
                   />
                 ))}
-                {data.old_object.videos.map((vid, index) => (
+                {data.new_object.videos.map((vid, index) => (
                   <video
                     key={index}
                     src={vid}
@@ -175,7 +175,7 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
                 className="bg-[#F5F9FF] h-full mt-3 rounded-3xl overflow-x-auto whitespace-nowrap"
                 style={{ maxHeight: "150px" }}
               >
-                {data.new_object.images.map((img, index) => (
+                {data.old_object.images.map((img, index) => (
                   <img
                     key={index}
                     src={img}
@@ -183,7 +183,7 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
                     className="inline-block w-24 h-24 object-cover mr-2"
                   />
                 ))}
-                {data.new_object.videos.map((vid, index) => (
+                {data.old_object.videos.map((vid, index) => (
                   <video
                     key={index}
                     src={vid}

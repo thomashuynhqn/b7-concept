@@ -97,19 +97,27 @@ const Edit = () => {
   const uploadImages = useCallback(
     async (id: string) => {
       try {
+        // Kiểm tra kích thước file trước khi upload
         for (const file of newImages) {
-          const imageUrl = await postUpLoadImage(
-            id,
-            file.originFileObj as File
-          );
-
-          if (imageUrl) {
-            setCurrentImages((prevImages) => [...prevImages, imageUrl]);
-            message.success("Image uploaded successfully!");
-          } else {
-            throw new Error("Image upload failed.");
+          if ((file.originFileObj as File).size > 15 * 1024 * 1024) {
+            message.error(`Image ${file.name} exceeds 15MB limit.`);
+            throw new Error("Image size exceeds limit."); // Dừng tiến trình
           }
         }
+
+        const uploadedUrls = await Promise.all(
+          newImages.map(async (file) => {
+            const imageUrl = await postUpLoadImage(
+              id,
+              file.originFileObj as File
+            );
+            if (!imageUrl) throw new Error("Image upload failed.");
+            return imageUrl;
+          })
+        );
+
+        setCurrentImages((prevImages) => [...prevImages, ...uploadedUrls]);
+        message.success("All images uploaded successfully!");
       } catch (error) {
         message.error("One or more images failed to upload.");
       }
@@ -118,21 +126,28 @@ const Edit = () => {
   );
 
   const uploadVideos = useCallback(
-    async (user_id: string) => {
+    async (id: string) => {
       try {
         for (const file of newVideos) {
-          const videoUrl = await postUploadVideo(
-            user_id,
-            file.originFileObj as File
-          );
-
-          if (videoUrl) {
-            setCurrentVideos((prevVideos) => [...prevVideos, videoUrl]);
-            message.success("Video uploaded successfully!");
-          } else {
-            throw new Error("Video upload failed.");
+          if ((file.originFileObj as File).size > 15 * 1024 * 1024) {
+            message.error(`Video ${file.name} exceeds 15MB limit.`);
+            throw new Error("Video size exceeds limit."); // Dừng tiến trình
           }
         }
+
+        const uploadedUrls = await Promise.all(
+          newVideos.map(async (file) => {
+            const videoUrl = await postUploadVideo(
+              id,
+              file.originFileObj as File
+            );
+            if (!videoUrl) throw new Error("Video upload failed.");
+            return videoUrl;
+          })
+        );
+
+        setCurrentVideos((prevVideos) => [...prevVideos, ...uploadedUrls]);
+        message.success("All videos uploaded successfully!");
       } catch (error) {
         message.error("One or more video failed to upload.");
       }
@@ -149,32 +164,31 @@ const Edit = () => {
       return;
     }
 
-    if (newImages.length > 0) {
-      await uploadImages(dataEdit.id.toString());
+    try {
+      if (newImages.length > 0) {
+        await uploadImages(dataEdit.id.toString()); // Nếu lỗi thì dừng
+      }
+
+      if (newVideos.length > 0) {
+        await uploadVideos(dataEdit.id.toString()); // Nếu lỗi thì dừng
+      }
+
+      const requestBody = {
+        ...dataEdit,
+        answer: editedContent,
+        images: currentImages,
+        videos: currentVideos,
+        userid: user_id,
+      };
+
+      const res = await postSubmitChange(dataEdit.id, requestBody);
+      message.success(res.data.message);
+      navigate(`/results/answer?id=${dataEdit.id}`);
+    } catch (err) {
+      message.error(`Failed to process request: ${err}`);
+    } finally {
+      dispatch(clearLoading());
     }
-
-    if (newVideos.length > 0) {
-      await uploadVideos(dataEdit.id.toString());
-    }
-
-    const requestBody = {
-      ...dataEdit,
-      answer: editedContent,
-      images: currentImages,
-      videos: currentVideos,
-      userid: user_id,
-    };
-
-    await postSubmitChange(dataEdit.id, requestBody)
-      .then((res) => {
-        message.success(res.data.message);
-        dispatch(clearLoading());
-        navigate(`/results/answer?id=${dataEdit.id}`);
-      })
-      .catch((err) => {
-        message.error(`Failed to save changes: ${err.message}`);
-        dispatch(clearLoading());
-      });
   }, [
     dataEdit,
     editedContent,

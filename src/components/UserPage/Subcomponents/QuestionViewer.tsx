@@ -62,7 +62,15 @@ const WarpCardInfor: React.FC<WarpCardInforProps> = ({ data }) => {
         className="h-full border p-5 rounded-3xl text-lg overflow-y-auto"
         style={{ maxHeight: "500px" }}
       >
-        {data.answer || "Chưa có câu trả lời"}
+        {data.answer && /<\/?[a-z][\s\S]*>/i.test(data.answer) ? (
+          // Là HTML
+          <div dangerouslySetInnerHTML={{ __html: data.answer }} />
+        ) : (
+          // Là chuỗi văn bản
+          <p className="text-black text-sm">
+            {data.answer || "Chưa có câu trả lời"}
+          </p>
+        )}
       </div>
     </div>
   );
