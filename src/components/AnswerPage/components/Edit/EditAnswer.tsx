@@ -191,22 +191,30 @@ const Edit = () => {
         newUploadedVideos = await uploadVideos(dataEdit.id.toString());
       }
 
-      // Exclude the media that have been marked for deletion
-      const remainingImages = dataEdit.images.filter(
+      // Safely filter out media marked for deletion
+      const remainingImages = (dataEdit.images || []).filter(
         (url) => !deletedImages.includes(url)
       );
-      const remainingVideos = dataEdit.videos.filter(
+      const remainingVideos = (dataEdit.videos || []).filter(
         (url) => !deletedVideos.includes(url)
       );
 
-      // Build the request body with the remaining media and new uploads.
-      const requestBody = {
+      // Combine existing and newly uploaded media
+      const imagesPayload = [...remainingImages, ...newUploadedImages];
+      const videosPayload = [...remainingVideos, ...newUploadedVideos];
+
+      // Build the request body conditionally
+      const requestBody: any = {
         ...dataEdit,
         answer: editedContent,
-        images: [...remainingImages, ...newUploadedImages],
-        videos: [...remainingVideos, ...newUploadedVideos],
         userid: user_id,
       };
+      if (imagesPayload.length > 0) {
+        requestBody.images = imagesPayload;
+      }
+      if (videosPayload.length > 0) {
+        requestBody.videos = videosPayload;
+      }
 
       const res = await postSubmitChange(dataEdit.id, requestBody);
       message.success(res.data.message);
