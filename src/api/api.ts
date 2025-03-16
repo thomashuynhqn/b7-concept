@@ -1,4 +1,25 @@
-import { cacheAPI, https } from "./cacheHelper";
+import axios, { AxiosInstance } from "axios";
+
+// Create an Axios instance
+export const https: AxiosInstance = axios.create({
+  baseURL: "https://b7concepts.com",
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
+  withCredentials: true, // Allow sending credentials (cookies)
+  timeout: 100000,
+});
+
+// Request interceptor for dynamic headers (adds session token if available)
+https.interceptors.request.use((config) => {
+  const sessionid = localStorage.getItem("sessionid");
+  if (sessionid) {
+    config.headers = config.headers || {};
+    config.headers["Authorization"] = `Bearer ${sessionid}`;
+  }
+  return config;
+});
 
 // Helper function to retrieve session ID
 const getSessionId = (): string | null => localStorage.getItem("sessionid");
@@ -42,20 +63,15 @@ export const postToResetPassword = (data: Record<string, unknown>) =>
   https.post("/verify-otp-and-reset-password/", data);
 
 /* ==========================
- * SEARCH APIs (with cache)
+ * SEARCH APIs
  * ========================== */
 export const getResults = async (query: string) =>
-  cacheAPI((url, params) => https.get(url, { params }), "/search-questions", {
-    query,
-  });
+  https.get("/search-questions", { params: { query } });
 
 export const getResultsAI = async (query: string) =>
-  cacheAPI((url, params) => https.get(url, { params }), "/search-ai", {
-    query,
-  });
+  https.get("/search-ai", { params: { query } });
 
-export const getResultsByID = (id: number) =>
-  cacheAPI((url) => https.get(url), `/question/${id}`);
+export const getResultsByID = (id: number) => https.get(`/question/${id}`);
 
 /* ==========================
  * CHAT API
@@ -66,15 +82,14 @@ export const postChat = (data: Record<string, unknown>) =>
 export const postChatHistory = (data: Record<string, unknown>) =>
   https.post("/fetch-chat-history/", data);
 
-export const clearChatHistory = (data: Record<string, unknown>) => {
+export const clearChatHistory = (data: Record<string, unknown>) =>
   https.post("/clear-chat-history/", data);
-};
 
 /* ==========================
  * SAVED QUESTIONS APIs
  * ========================== */
 export const getSaveQuestions = async (id: string) =>
-  cacheAPI((url) => https.get(url), `/saved-questions/${id}`);
+  https.get(`/saved-questions/${id}`);
 
 export const postLikeCount = (id: string, user_id: string) =>
   https.post(`/like-question/${id}/`, { user_id });
@@ -88,8 +103,7 @@ export const postDeleteSavedQuestion = (user_id: number, id: number) =>
 /* ==========================
  * TOPIC MANAGEMENT APIs
  * ========================== */
-export const getTopic = async () =>
-  cacheAPI((url) => https.get(url), "/topics/hierarchy/");
+export const getTopic = async () => https.get("/topics/hierarchy/");
 
 export const postAddNewTopic = (name: string, parent_id: string | null) =>
   https.post("/topics/add/", { name, parent_id });
@@ -110,7 +124,7 @@ export const postAddResultToTopic = async (
   body: Record<string, unknown>,
   topicId: string
 ) => {
-  const response = https.post(`/topics/${topicId}/add-result/`, body);
+  const response = await https.post(`/topics/${topicId}/add-result/`, body);
   return response;
 };
 
@@ -156,14 +170,10 @@ export const getListPendingEditor = async () => {
     );
     throw new Error("Session ID is missing.");
   }
-  return cacheAPI(
-    (url) =>
-      https.get(url, {
-        headers: { Authorization: `Bearer ${sessionid}` },
-        withCredentials: true,
-      }),
-    "/questionanswerpair/changes/pending"
-  );
+  return https.get("/questionanswerpair/changes/pending", {
+    headers: { Authorization: `Bearer ${sessionid}` },
+    withCredentials: true,
+  });
 };
 
 export const getListPendingAdmin = async () => {
@@ -172,14 +182,10 @@ export const getListPendingAdmin = async () => {
     console.error("Session ID is missing. Cannot fetch pending admin changes.");
     throw new Error("Session ID is missing.");
   }
-  return cacheAPI(
-    (url) =>
-      https.get(url, {
-        headers: { Authorization: `Bearer ${sessionid}` },
-        withCredentials: true,
-      }),
-    "/questionanswerpair/changes/"
-  );
+  return https.get("/questionanswerpair/changes/", {
+    headers: { Authorization: `Bearer ${sessionid}` },
+    withCredentials: true,
+  });
 };
 
 export const updateUserInfo = async (
@@ -189,12 +195,11 @@ export const updateUserInfo = async (
   return https.patch(`/update-user/admin/${userId}/`, updatedData);
 };
 
-export const postDeleteUser = (id: string) => {
-  return https.delete(`/users/admin/${id}/delete/`);
-};
+export const postDeleteUser = (id: string) =>
+  https.delete(`/users/admin/${id}/delete/`);
 
 export const getListStatusUser = (id: number) =>
-  cacheAPI((url) => https.get(url), `/questionanswerpair/changes/user/${id}/`);
+  https.get(`/questionanswerpair/changes/user/${id}/`);
 
 export const getDetailsChanges = async (id: number) => {
   const sessionid = getSessionId();
@@ -202,18 +207,14 @@ export const getDetailsChanges = async (id: number) => {
     console.error("Session ID is missing. Cannot fetch change details.");
     throw new Error("Session ID is missing.");
   }
-  return cacheAPI(
-    (url) =>
-      https.get(url, {
-        headers: { Authorization: `Bearer ${sessionid}` },
-        withCredentials: true,
-      }),
-    `/questionanswerpair/changes/${id}/diffs/`
-  );
+  return https.get(`/questionanswerpair/changes/${id}/diffs/`, {
+    headers: { Authorization: `Bearer ${sessionid}` },
+    withCredentials: true,
+  });
 };
 
 export const postEditUser = async (username: string, full_name: string) => {
-  const sessionid = localStorage.getItem("sessionid");
+  const sessionid = getSessionId();
 
   if (!sessionid) {
     alert("Your session has expired. Please log in again.");
@@ -225,8 +226,8 @@ export const postEditUser = async (username: string, full_name: string) => {
     `/user/edit/`,
     { username, full_name },
     {
-      headers: { Authorization: `Bearer ${sessionid}` }, // Attach session ID
-      withCredentials: true, // Ensure cookies are sent
+      headers: { Authorization: `Bearer ${sessionid}` },
+      withCredentials: true,
     }
   );
 };
@@ -243,16 +244,12 @@ export const getAllUsers = async () => {
     console.error("Session ID is missing. Cannot fetch users.");
     throw new Error("Session ID is missing.");
   }
-  return cacheAPI(
-    (url) =>
-      https.get(url, {
-        headers: {
-          Authorization: `Bearer ${sessionid}`,
-        },
-        withCredentials: true,
-      }),
-    `/get-users/admin/`
-  );
+  return https.get("/get-users/admin/", {
+    headers: {
+      Authorization: `Bearer ${sessionid}`,
+    },
+    withCredentials: true,
+  });
 };
 
 export const getLikeAndSaveResult = (id: number, questionId: number) =>
@@ -265,24 +262,18 @@ export const postApproveOrReject = (
   https.post(`/questionanswerpair/changes/${id}/approve_or_reject/`, payload);
 
 export const getKeywordsById = (resultId: number) =>
-  cacheAPI((url) => https.get(url), `/keywords/${resultId}`);
+  https.get(`/keywords/${resultId}`);
 
 export const getKeywords = async (query: string) =>
-  cacheAPI((url, params) => https.get(url, { params }), "/search-keywords/", {
-    query,
-  });
+  https.get("/search-keywords/", { params: { query } });
 
 export const updateKeywords = async (resultId: number, keywords: number[]) =>
   https.put(`/update-keywords/${resultId}/`, { keywords });
 
-export const getListKeywords = async () => {
-  return https.get(`/get-keywords/`);
-};
+export const getListKeywords = async () => https.get(`/get-keywords/`);
 
-export const createKeyword = async (label: string) => {
-  return https.post(`/create-keywords/`, { label });
-};
+export const createKeyword = async (label: string) =>
+  https.post(`/create-keywords/`, { label });
 
-export const deleteKeyword = async (id: number) => {
-  return https.delete(`/delete-keywords/${id}/`);
-};
+export const deleteKeyword = async (id: number) =>
+  https.delete(`/delete-keywords/${id}/`);
