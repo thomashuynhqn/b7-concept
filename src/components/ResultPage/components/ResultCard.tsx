@@ -41,9 +41,14 @@ const ResultCard: React.FC<ResultCardProps> = ({
             <div className="text-black">
               {typeof result.answer === "string" ? (
                 /<\/?[a-z][\s\S]*>/i.test(result.answer) ? (
-                  <div dangerouslySetInnerHTML={{ __html: result.answer }} />
+                  <div
+                    className="line-clamp-5 overflow-hidden text-sm"
+                    dangerouslySetInnerHTML={{ __html: result.answer }}
+                  />
                 ) : (
-                  <p className="text-sm">{result.answer}</p>
+                  <p className="line-clamp-5 overflow-hidden text-sm">
+                    {result.answer}
+                  </p>
                 )
               ) : (
                 <p className="text-sm">Không có dữ liệu hợp lệ</p>

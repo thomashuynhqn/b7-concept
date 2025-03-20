@@ -7,7 +7,7 @@ import {
   faX,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, Col, Input, message, Row } from "antd";
+import { Button, Col, message, Row } from "antd";
 import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -23,6 +23,7 @@ import WrapImageScreen from "./components/Image/ImageWrapper";
 import WarpKeyWord from "./components/Keyword/KeywordWrapper";
 import WrapVideoScreen from "./components/Media/WarpVideoScreen";
 import WarpTopic from "./components/Topic/TopicWrapper";
+import TextArea from "antd/es/input/TextArea";
 
 interface DataApi {
   id: number;
@@ -146,11 +147,11 @@ const Answer = () => {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && valueSearch !== "") {
-      handleSearch("normal");
-    }
-  };
+  // const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  //   if (e.key === "Enter" && valueSearch !== "") {
+  //     handleSearch("normal");
+  //   }
+  // };
 
   useEffect(() => {
     dispatch(openLoading());
@@ -289,7 +290,7 @@ const Answer = () => {
           <hr className="my-4 border-gray-300" />
 
           {/* Answer Section with scroll */}
-          <div className="max-h-80 overflow-y-auto pr-2">
+          <div className="max-h-100 overflow-y-auto pr-2">
             {typeof data.answer === "string" ? (
               /<\/?[a-z][\s\S]*>/i.test(data.answer) ? (
                 <div
@@ -365,52 +366,49 @@ const Answer = () => {
         <Col span={!isOpenTabAI ? 22 : 12}>
           <Row gutter={16} className="h-auto w-screen pr-10 pl-2">
             <Col className="h-full" span={12}>
-              {/* <WarpSearch onChange={() => setSearchWithAI(!searchWithAI)} /> */}
-              <Input
-                size="large"
-                placeholder="Điều bạn muốn tìm kiếm là..."
-                className="w-full h-16 flex flex-row-reverse px-6 mt-5"
-                value={valueSearch}
-                onChange={(e) => setValueSearch(e.target.value)}
-                onKeyDown={handleKeyPress}
-                prefix={
-                  <>
-                    <FontAwesomeIcon
-                      icon={faX}
-                      className={`border-r border-slate-800 pr-5 ${
-                        valueSearch === "" ? "color-gray" : "cursor-pointer"
-                      }`}
-                      color="inherit"
-                      onClick={() => valueSearch !== "" && setValueSearch("")}
-                    />
-                    <FontAwesomeIcon
-                      icon={faSearch}
-                      className={`pr-2 pl-3 ${
-                        valueSearch !== "" ? "cursor-pointer" : ""
-                      }`}
-                      color="#227EFF"
-                      onClick={() =>
-                        valueSearch !== "" && handleSearch("normal")
-                      }
-                    />
-                    {/* <FontAwesomeIcon
-                      icon={faStar}
-                      className={`pl-2 ${
-                        valueSearch !== "" ? "cursor-pointer" : ""
-                      }`}
-                      color={valueSearch === "" ? "gray" : "#227EFF"}
-                      onClick={() => valueSearch !== "" && handleSearch("ai")}
-                    /> */}
-                    <img
-                      src="/Vector.svg"
-                      className={`w-5 h-5 ${
-                        valueSearch !== "" ? "cursor-pointer" : ""
-                      }`}
-                      onClick={() => valueSearch !== "" && handleSearch("ai")}
-                    />
-                  </>
-                }
-              />
+              <div className="relative w-full">
+                <TextArea
+                  autoSize={{ minRows: 1, maxRows: 5 }} // Tự động mở rộng chiều cao
+                  placeholder="Điều bạn muốn tìm kiếm là..."
+                  className="w-full px-6 pt-5 pb-5 pr-16 mt-5 resize-none border border-gray-300 rounded-lg shadow-sm"
+                  value={valueSearch}
+                  onChange={(e) => setValueSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault(); // Chặn xuống dòng mặc định
+                      if (valueSearch.trim() !== "") handleSearch("normal");
+                    }
+                  }}
+                />
+                {/* Prefix icons */}
+                <div className="absolute top-12 right-4 transform -translate-y-1/2 flex items-center space-x-3">
+                  <FontAwesomeIcon
+                    icon={faX}
+                    className={`border-r border-slate-800 pr-5 ${
+                      valueSearch === ""
+                        ? "text-gray-400"
+                        : "cursor-pointer text-black"
+                    }`}
+                    onClick={() => valueSearch !== "" && setValueSearch("")}
+                  />
+                  <FontAwesomeIcon
+                    icon={faSearch}
+                    className={`pr-2 pl-3 ${
+                      valueSearch !== ""
+                        ? "cursor-pointer text-[#227EFF]"
+                        : "text-gray-400"
+                    }`}
+                    onClick={() => valueSearch !== "" && handleSearch("normal")}
+                  />
+                  <img
+                    src="/Vector.svg"
+                    className={`w-5 h-5 ${
+                      valueSearch !== "" ? "cursor-pointer" : "opacity-50"
+                    }`}
+                    onClick={() => valueSearch !== "" && handleSearch("ai")}
+                  />
+                </div>
+              </div>
             </Col>
           </Row>
           <Row gutter={16} className="h-fit w-full flex overflow-hide pl-2">
@@ -482,7 +480,7 @@ const Answer = () => {
                     ></div>
                   </Col>
                   <Col span={6}>
-                    <div className="text-white text-2xl w-[25px] h-[35px]">
+                    <div className="text-white text-2xl mb-5 w-[25px] h-[35px]">
                       <img
                         src="/Edit.svg"
                         className={"w-full h-full cursor-pointer"}
