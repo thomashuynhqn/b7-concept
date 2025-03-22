@@ -64,8 +64,8 @@ const WarpCard: React.FC<WarpCardProps> = ({ data }) => {
               left: "50%",
               transform: "translate(-50%, -50%)",
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              // alignItems: "center",
+              // justifyContent: "center",
               color: "#888", // Màu biểu tượng lỗi
               fontSize: "32px",
               backgroundColor: "rgba(255, 255, 255, 0.8)", // Nền mờ phía sau icon
@@ -131,16 +131,20 @@ const WarpCard: React.FC<WarpCardProps> = ({ data }) => {
 
 const WrapImageScreen: React.FC<WarpImageProps> = ({ data }) => {
   return (
-    <div className="h-[70vh] overflow-y-auto overflow-x-hidden">
-      <Row gutter={[16, 16]}>
+    <div className="overflow-y-auto overflow-x-hidden h-full flex flex-col">
+      <Row gutter={[16, 16]} align="top" className="flex-1">
         {data ? (
           data.map((item: string, index: React.Key | null | undefined) => (
-            <Col key={index} span={12} className="flex justify-center">
+            <Col
+              key={index}
+              span={12}
+              className="flex justify-center items-start"
+            >
               <WarpCard data={item} />
             </Col>
           ))
         ) : (
-          <div className="w-full h-full flex justify-center items-center font-bold text-white">
+          <div className="w-full flex justify-center items-center font-bold text-white">
             No data
           </div>
         )}

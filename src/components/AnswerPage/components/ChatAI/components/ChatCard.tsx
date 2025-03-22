@@ -10,7 +10,7 @@ interface ChatCardProps {
 
 const ChatCard: React.FC<ChatCardProps> = ({ data, onChatClick }) => {
   return (
-    <div className="flex flex-col h-full w-full bg-white p-6 rounded-3xl shadow">
+    <div className="flex flex-col h-[78vh] w-full bg-white p-6 rounded-3xl shadow">
       <div className="flex justify-between items-center mb-4">
         <img src="/Vector.svg" alt="Vector" className="w-5 h-5" />
         <button

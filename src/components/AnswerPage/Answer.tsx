@@ -267,10 +267,10 @@ const Answer = () => {
 
   const WarpCard: React.FC<WarpCardProps> = ({ data }) => {
     return (
-      <div className="bg-white mt-4 pb-4 border shadow-lg rounded-xl">
-        <div className="p-5">
+      <div className="bg-white my-5 pb-4 border shadow-lg rounded-xl">
+        <div className="h-fit p-5 flex flex-col">
           {/* Header Section */}
-          <Row gutter={16} className="items-center">
+          <Row gutter={16} className="items-center shrink-0">
             <Col span={12}>
               <h2 className="text-xl font-bold text-[#227EFF]">
                 {data.question}
@@ -287,10 +287,10 @@ const Answer = () => {
             </Col>
           </Row>
 
-          <hr className="my-4 border-gray-300" />
+          <hr className="my-4 border-gray-300 shrink-0" />
 
           {/* Answer Section with scroll */}
-          <div className="max-h-100 overflow-y-auto pr-2">
+          <div className="flex-1 max-h-full overflow-y-auto pr-2">
             {typeof data.answer === "string" ? (
               /<\/?[a-z][\s\S]*>/i.test(data.answer) ? (
                 <div
@@ -304,6 +304,8 @@ const Answer = () => {
               <p className="text-sm text-black">Không có dữ liệu hợp lệ</p>
             )}
           </div>
+
+          <hr className="mt-4 border-gray-300 shrink-0" />
         </div>
       </div>
     );
@@ -411,8 +413,12 @@ const Answer = () => {
               </div>
             </Col>
           </Row>
-          <Row gutter={16} className="h-fit w-full flex overflow-hide pl-2">
-            <Col span={24}>
+          <Row gutter={16} className="h-[80vh] w-full pl-2">
+            <Col
+              span={24}
+              className="h-full overflow-y-auto pr-4 scrollbar-hidden"
+              style={{ overflowY: "auto" }} // Fallback for ensuring scroll behavior
+            >
               <WarpCard data={dataAnswer} />
             </Col>
           </Row>
@@ -529,9 +535,9 @@ const Answer = () => {
           >
             <Row
               gutter={16}
-              className="p-8 h-full w-full flex flex-coll justify-start items-start"
+              className="p-8 h-full w-full flex flex-col justify-start items-start"
             >
-              <Col span={24}>
+              <Row gutter={16}>
                 <div className="h-10 text-white flex flex-wrap gap-x-4 items-center">
                   <div
                     className="cursor-pointer"
@@ -577,8 +583,8 @@ const Answer = () => {
                     </>
                   )}
                 </div>
-              </Col>
-              <Col span={24} className="h-[70vh] w-full">
+              </Row>
+              <Row gutter={16} className="w-full my-3">
                 {tabs === "image" ? (
                   <WarpImage data={dataAnswer.images} />
                 ) : tabs === "video" ? (
@@ -594,7 +600,7 @@ const Answer = () => {
                     handleAddResultToTopic={handleAddResultToTopic}
                   />
                 )}
-              </Col>
+              </Row>
             </Row>
             <div className="absolute text-black bottom-20 left-0 cursor-pointer">
               <div className="w-4 h-10 bg-[#E6E6E6] rounded-e-lg flex justify-center items-center">

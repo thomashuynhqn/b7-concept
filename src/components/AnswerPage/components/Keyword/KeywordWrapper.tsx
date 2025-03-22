@@ -41,21 +41,17 @@ const WarpCard: React.FC<WarpCardProps> = ({ data, onDelete }) => {
 };
 
 const WarpKeyWord: React.FC<WarpKeyWordProps> = ({ id }) => {
-  // State for the list of keywords (as objects with id and title)
   const [questionKeywords, setQuestionKeywords] = useState<Data[]>([]);
-  // State for search suggestions from the search API
   const [searchResults, setSearchResults] = useState<Data[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [userText, setUserText] = useState<string>("");
+  const [isSaveEnabled, setIsSaveEnabled] = useState<boolean>(false); // ✅ Track save button state
 
-  // Fetch the initial keywords using GET /keywords/:resultId
   useEffect(() => {
     const fetchQuestionKeywords = async () => {
       setLoading(true);
       try {
         const response = await getKeywordsById(id);
-        // The API returns an array like: [ { "label": "B7" }, { "label": "Science" }, ... ]
-        // Generate a local id using the index and map "label" to "title"
         const formattedData: Data[] = response.data.map(
           (item: { label: string }, index: number) => ({
             id: index + 1,
@@ -69,11 +65,9 @@ const WarpKeyWord: React.FC<WarpKeyWordProps> = ({ id }) => {
         setLoading(false);
       }
     };
-
     fetchQuestionKeywords();
   }, [id]);
 
-  // Fetch search suggestions when user types at least 2 characters
   useEffect(() => {
     if (userText.trim().length < 2) {
       setSearchResults([]);
@@ -82,11 +76,9 @@ const WarpKeyWord: React.FC<WarpKeyWordProps> = ({ id }) => {
     const fetchSearchSuggestions = async () => {
       try {
         const response = await getKeywords(userText);
-        // Expecting response.data.keywords to be an array of objects with id and label.
-        // If the API returns an id, use it; otherwise generate one.
         const searchData: Data[] = response.data.keywords.map(
           (item: { id?: number; label: string }, index: number) => ({
-            id: item.id || index + 1000, // Generate a temporary id if not provided
+            id: item.id || index + 1000,
             title: item.label,
           })
         );
@@ -95,50 +87,45 @@ const WarpKeyWord: React.FC<WarpKeyWordProps> = ({ id }) => {
         console.error("Error fetching search keywords:", error);
       }
     };
-
     fetchSearchSuggestions();
   }, [userText]);
 
-  // Delete a keyword from the list
   const handleDeleteKeyword = (keywordId: number) => {
-    setQuestionKeywords((prev) =>
-      prev.filter((keyword) => keyword.id !== keywordId)
+    const updatedKeywords = questionKeywords.filter(
+      (keyword) => keyword.id !== keywordId
     );
+    setQuestionKeywords(updatedKeywords);
+    setIsSaveEnabled(updatedKeywords.length > 0); // ✅ Disable save if no keywords
   };
 
-  // Update the search input
   const handleInputChange = (value: string) => {
     setUserText(value);
   };
 
-  // When a suggestion is selected, add it to the list (if not already added)
   const handleSelect = (value: string, option: any) => {
     if (questionKeywords.find((keyword) => keyword.title === value)) {
       message.warning("Keyword already added.");
       setUserText("");
       return;
     }
-    const selectedKeyword: Data = {
-      id: option.id, // Use the suggestion's id (or generated id)
-      title: value,
-    };
-    setQuestionKeywords((prev) => [...prev, selectedKeyword]);
+    const selectedKeyword: Data = { id: option.id, title: value };
+    const updatedKeywords = [...questionKeywords, selectedKeyword];
+    setQuestionKeywords(updatedKeywords);
     setUserText("");
+    setIsSaveEnabled(true); // ✅ Enable save when a keyword is added
   };
 
-  // Prepare options for the AutoComplete dropdown
   const autoCompleteOptions = searchResults.map((item) => ({
     value: item.title,
     id: item.id,
   }));
 
-  // Save the keywords via PUT, sending an array of keyword labels
   const handleSaveKeywords = async () => {
     try {
-      // Build payload: { keywords: [ "B7", "Science", "Buddhism" ] }
       const payload = questionKeywords.map((keyword) => keyword.id);
       await updateKeywords(id, payload);
       message.success("Keywords updated successfully!");
+      setIsSaveEnabled(false); // ✅ Disable button after saving
     } catch (error) {
       console.error("Error updating keywords:", error);
       message.error("Failed to update keywords.");
@@ -146,62 +133,68 @@ const WarpKeyWord: React.FC<WarpKeyWordProps> = ({ id }) => {
   };
 
   return (
-    <div className="w-full h-full">
-      <div className="w-full bg-white p-5 rounded-3xl">
-        <p className="font-bold text-xl mb-5">
-          Danh sách Keyword cho câu trả lời này
-        </p>
-        {/* Search Bar with AutoComplete */}
-        <div className="mb-4 pb-4">
+    <div className="w-full h-[78vh] flex flex-col">
+      <div className="w-full h-full bg-white p-6 rounded-3xl shadow-md flex flex-col">
+        <div className="mb-6">
           <AutoComplete
             options={autoCompleteOptions}
             value={userText}
             onSelect={handleSelect}
             onChange={handleInputChange}
-            style={{ width: "100%" }}
+            className="w-full"
           >
             <Input
               size="large"
-              className="w-full flex flex-row-reverse p-4"
               placeholder="Tìm kiếm keyword..."
+              className="w-full p-4 rounded-lg border-gray-300 focus:border-[#227EFF] focus:ring-[#227EFF]"
               prefix={
                 <FontAwesomeIcon
                   icon={faArrowRight}
-                  className="cursor-pointer font-bold text-xl text-[#227EFF]"
+                  className="text-[#227EFF] text-lg mr-2"
                 />
               }
             />
           </AutoComplete>
         </div>
-        {/* Save Button */}
-        <div className="mb-4">
-          <Button type="primary" onClick={handleSaveKeywords}>
-            Save Keywords
-          </Button>
-        </div>
-        {/* Divider */}
-        <div className="border-t mb-4" />
-        {/* List of Keywords */}
-        <div className="w-full h-[50vh] overflow-auto pr-5">
+
+        <div className="w-full flex-1 overflow-y-auto p-4">
           {loading ? (
             <div className="h-full flex justify-center items-center">
               <Spin size="large" />
             </div>
           ) : questionKeywords.length > 0 ? (
-            questionKeywords.map((item) => (
-              <WarpCard
-                key={item.id}
-                data={item}
-                onDelete={handleDeleteKeyword}
-              />
-            ))
+            <div className="space-y-3">
+              {questionKeywords.map((item) => (
+                <WarpCard
+                  key={item.id}
+                  data={item}
+                  onDelete={handleDeleteKeyword}
+                />
+              ))}
+            </div>
           ) : (
             <div className="h-full flex justify-center items-center">
-              <p className="text-gray-500 text-center">
+              <p className="text-gray-500 text-center text-sm">
                 Câu hỏi này không có keyword
               </p>
             </div>
           )}
+        </div>
+
+        {/* Save Button (Disabled until keywords are added) */}
+        <div className="mt-auto pt-4 flex justify-end">
+          <Button
+            type="primary"
+            onClick={handleSaveKeywords}
+            disabled={!isSaveEnabled} // ✅ Disable when empty
+            className={`px-6 py-2 rounded-lg ${
+              isSaveEnabled
+                ? "bg-[#227EFF] hover:bg-[#1a66cc] text-white"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
+          >
+            Lưu Keywords
+          </Button>
         </div>
       </div>
     </div>

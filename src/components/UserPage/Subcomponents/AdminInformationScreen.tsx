@@ -102,106 +102,96 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
         </div>
       </div>
 
-      <div className="flex mt-5 h-full flex-col">
-        <div className="flex flex-row h-[60%]">
+      <div className="flex flex-col h-screen p-5">
+        <div className="flex flex-1 overflow-hidden">
           {/* Current and Changed Answers */}
-          <div className="w-1/2 flex flex-col mr-7">
-            <div className="flex flex-col h-1/2">
+          <div className="w-1/2 flex flex-col pr-4 h-full">
+            <div className="flex flex-col flex-1 min-h-0">
               <p className="text-lg font-bold">Câu trả lời hiện tại</p>
-              <div
-                className="h-full bg-[#F5F9FF] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-sm overflow-y-auto"
-                style={{ maxHeight: "150px" }}
-              >
+              <div className="bg-[#F5F9FF] mt-3 p-5 rounded-3xl text-sm overflow-auto flex-1 min-h-0">
                 {data.old_object.answer &&
                 /<\/?[a-z][\s\S]*>/i.test(data.old_object.answer) ? (
-                  // Là HTML
                   <div
                     dangerouslySetInnerHTML={{ __html: data.old_object.answer }}
                   />
                 ) : (
-                  // Là chuỗi văn bản
                   <p className="text-black text-sm">{data.old_object.answer}</p>
                 )}
               </div>
             </div>
-            <div className="mt-7 h-1/4">
+            <div className="mt-7 flex-1 min-h-0">
               <p className="text-lg font-bold">Hình ảnh, video hiện tại</p>
-              <div
-                className="bg-[#F5F9FF] h-full mt-3 rounded-3xl overflow-x-auto whitespace-nowrap"
-                style={{ maxHeight: "150px" }}
-              >
-                {data.old_object.images.map((img, index) => (
-                  <img
-                    key={index}
-                    src={img}
-                    alt={`Old Image ${index}`}
-                    className="inline-block w-24 h-24 object-cover mr-2"
-                  />
-                ))}
-                {data.old_object.videos.map((vid, index) => (
-                  <video
-                    key={index}
-                    src={vid}
-                    className="inline-block w-24 h-24 object-cover mr-2"
-                    controls
-                  />
-                ))}
+              <div className="bg-[#F5F9FF] mt-3 rounded-3xl overflow-hidden flex-1 min-h-0">
+                {/* Scrollable Image Container */}
+                <div className="overflow-auto max-h-[150px] flex p-2">
+                  {data.old_object.images.map((img, index) => (
+                    <img
+                      key={index}
+                      src={img}
+                      alt={`Old Image ${index}`}
+                      className="w-24 h-24 object-cover mr-2"
+                    />
+                  ))}
+                  {data.old_object.videos.map((vid, index) => (
+                    <video
+                      key={index}
+                      src={vid}
+                      className="w-24 h-24 object-cover mr-2"
+                      controls
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="w-1/2 flex flex-col">
-            <div className="flex flex-col h-1/2">
+          <div className="w-1/2 flex flex-col pl-4 h-full">
+            <div className="flex flex-col flex-1 min-h-0">
               <p className="text-lg font-bold">Câu trả lời được thay đổi</p>
-              <div
-                className="h-full bg-[#F5F9FF] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-sm overflow-y-auto"
-                style={{ maxHeight: "150px" }}
-              >
+              <div className="bg-[#F5F9FF] mt-3 p-5 rounded-3xl text-sm overflow-auto flex-1 min-h-0">
                 {data.new_object.answer &&
                 /<\/?[a-z][\s\S]*>/i.test(data.new_object.answer) ? (
-                  // Là HTML
                   <div
                     dangerouslySetInnerHTML={{ __html: data.new_object.answer }}
                   />
                 ) : (
-                  // Là chuỗi văn bản
                   <p className="text-black text-sm">{data.new_object.answer}</p>
                 )}
               </div>
             </div>
-            <div className="mt-7 h-1/4">
+            <div className="mt-7 flex-1 min-h-0">
               <p className="text-lg font-bold">Hình ảnh, video được thay đổi</p>
-              <div
-                className="bg-[#F5F9FF] h-full mt-3 rounded-3xl overflow-x-auto whitespace-nowrap"
-                style={{ maxHeight: "150px" }}
-              >
-                {data.new_object.images.map((img, index) => (
-                  <img
-                    key={index}
-                    src={img}
-                    alt={`New Image ${index}`}
-                    className="inline-block w-24 h-24 object-cover mr-2"
-                  />
-                ))}
-                {data.new_object.videos.map((vid, index) => (
-                  <video
-                    key={index}
-                    src={vid}
-                    className="inline-block w-24 h-24 object-cover mr-2"
-                    controls
-                  />
-                ))}
+              <div className="bg-[#F5F9FF] mt-3 rounded-3xl overflow-hidden flex-1 min-h-0">
+                {/* Scrollable Image Container */}
+                <div className="overflow-auto max-h-[150px] flex p-2">
+                  {data.new_object.images.map((img, index) => (
+                    <img
+                      key={index}
+                      src={img}
+                      alt={`New Image ${index}`}
+                      className="w-24 h-24 object-cover mr-2"
+                    />
+                  ))}
+                  {data.new_object.videos.map((vid, index) => (
+                    <video
+                      key={index}
+                      src={vid}
+                      className="w-24 h-24 object-cover mr-2"
+                      controls
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-5 flex justify-between">
+        <div className="flex justify-end">
           <Button onClick={() => setIsRejectModalOpen(true)}>
-            Huỷ chỉnh sửa
+            Từ chối duyệt
           </Button>
           <Button className="mx-5" type="primary" onClick={handleApprove}>
-            Lưu chỉnh sửa
+            Đồng ý duyệt
           </Button>
         </div>
       </div>

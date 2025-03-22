@@ -52,21 +52,19 @@ const WarpSearch: React.FC<{ onSearch: (searchText: string) => void }> = ({
   };
 
   return (
-    <div className="h-full">
-      <Input
-        size="large"
-        placeholder="Tìm kiếm topic..."
-        className="w-full flex flex-row-reverse p-4"
-        prefix={
-          <FontAwesomeIcon
-            icon={faArrowRight}
-            className="cursor-pointer font-bold text-xl text-[#227EFF]"
-          />
-        }
-        value={userText}
-        onChange={handleInputChange}
-      />
-    </div>
+    <Input
+      size="large"
+      placeholder="Tìm kiếm topic..."
+      className="w-full flex flex-row-reverse p-4"
+      prefix={
+        <FontAwesomeIcon
+          icon={faArrowRight}
+          className="cursor-pointer font-bold text-xl text-[#227EFF]"
+        />
+      }
+      value={userText}
+      onChange={handleInputChange}
+    />
   );
 };
 
@@ -229,11 +227,9 @@ const WarpTopic: React.FC<WarpCardProps> = ({
 
   return (
     <div className="w-full h-full">
-      <div className="mb-8">
+      <div className="w-full h-[78vh] flex flex-col bg-white p-5 rounded-3xl">
         <WarpSearch onSearch={handleSearch} />
-      </div>
-      <div className="w-full h-[60vh] flex flex-col bg-white p-5 rounded-3xl">
-        <div className="h-5/6 overflow-auto overflow-x-hidden py-3 pl-3 pr-6 rounded-3xl">
+        <div className=" overflow-auto overflow-x-hidden rounded-3xl my-2">
           {filteredTopics.length > 0 ? (
             filteredTopics.map((topicData) => (
               <WarpCard
