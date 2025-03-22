@@ -77,15 +77,15 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex justify-between">
+    <div className="h-full w-full flex flex-col">
+      <div className="h-[10%] flex justify-between">
         <p className="mb-10 text-[#000000] font-bold text-3xl">
           Chi tiết yêu cầu xử lý
         </p>
         <Button onClick={() => setOption("main")}>Quay lại</Button>
       </div>
 
-      <div className="flex justify-between p-5 bg-[#F5F9FF] rounded-3xl">
+      <div className="h-[10%] flex justify-between p-5 bg-[#e7effc] rounded-3xl">
         <p>{data.old_object.question}</p>
         <div className="flex items-center">
           <FontAwesomeIcon
@@ -102,15 +102,15 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
         </div>
       </div>
 
-      <div className="flex mt-5 h-full flex-col">
-        <div className="flex flex-row h-[60%]">
+      <div className="h-[70%] flex mt-5 flex-col justify-between">
+        <div className="flex flex-row h-[90%]">
           {/* Current and Changed Answers */}
-          <div className="w-1/2 flex flex-col mr-7">
-            <div className="flex flex-col h-1/2">
+          <div className="h-full w-1/2 flex flex-col mr-7">
+            <div className="flex flex-col h-[60%]">
               <p className="text-lg font-bold">Câu trả lời hiện tại</p>
               <div
-                className="h-full bg-[#F5F9FF] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-sm overflow-y-auto"
-                style={{ maxHeight: "150px" }}
+                className="h-full bg-[#e7effc] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-sm overflow-y-auto"
+                // style={{ maxHeight: "400px" }}
               >
                 {data.old_object.answer &&
                 /<\/?[a-z][\s\S]*>/i.test(data.old_object.answer) ? (
@@ -124,10 +124,10 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
                 )}
               </div>
             </div>
-            <div className="mt-7 h-1/4">
+            <div className="mt-7 h-[25%]">
               <p className="text-lg font-bold">Hình ảnh, video hiện tại</p>
               <div
-                className="bg-[#F5F9FF] h-full mt-3 rounded-3xl overflow-x-auto whitespace-nowrap"
+                className="bg-[#e7effc] h-full mt-3 rounded-3xl overflow-x-auto whitespace-nowrap"
                 style={{ maxHeight: "150px" }}
               >
                 {data.old_object.images.map((img, index) => (
@@ -150,12 +150,12 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
             </div>
           </div>
 
-          <div className="w-1/2 flex flex-col">
-            <div className="flex flex-col h-1/2">
+          <div className="h-full w-1/2 flex flex-col">
+            <div className="flex flex-col h-[60%]">
               <p className="text-lg font-bold">Câu trả lời được thay đổi</p>
               <div
-                className="h-full bg-[#F5F9FF] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-sm overflow-y-auto"
-                style={{ maxHeight: "150px" }}
+                className="h-full bg-[#e7effc] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-sm overflow-y-auto"
+                // style={{ maxHeight: "400px" }}
               >
                 {data.new_object.answer &&
                 /<\/?[a-z][\s\S]*>/i.test(data.new_object.answer) ? (
@@ -169,10 +169,10 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
                 )}
               </div>
             </div>
-            <div className="mt-7 h-1/4">
+            <div className="mt-7 h-1/4 h-[25%]">
               <p className="text-lg font-bold">Hình ảnh, video được thay đổi</p>
               <div
-                className="bg-[#F5F9FF] h-full mt-3 rounded-3xl overflow-x-auto whitespace-nowrap"
+                className="bg-[#e7effc] h-full mt-3 rounded-3xl overflow-x-auto whitespace-nowrap"
                 style={{ maxHeight: "150px" }}
               >
                 {data.new_object.images.map((img, index) => (
@@ -180,14 +180,14 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
                     key={index}
                     src={img}
                     alt={`New Image ${index}`}
-                    className="inline-block w-24 h-24 object-cover mr-2"
+                    className="inline-block w-20 h-20 object-cover mr-2"
                   />
                 ))}
                 {data.new_object.videos.map((vid, index) => (
                   <video
                     key={index}
                     src={vid}
-                    className="inline-block w-24 h-24 object-cover mr-2"
+                    className="inline-block w-20 h-20 object-cover mr-2"
                     controls
                   />
                 ))}
@@ -196,7 +196,7 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
           </div>
         </div>
 
-        <div className="mt-5 flex justify-between">
+        <div className="mt-5 flex justify-between h-[10%]">
           <Button onClick={() => setIsRejectModalOpen(true)}>
             Huỷ chỉnh sửa
           </Button>
