@@ -1,11 +1,14 @@
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button } from "antd";
-import { DataApiChange } from "./typeDefinitions"; // Assuming ChangeDetailsApi is the type for the response
+import React from "react";
+import parse from "html-react-parser"; // Import html-react-parser
+import DOMPurify from "dompurify"; // Import DOMPurify
+import { DataApiChange } from "./typeDefinitions";
 
 interface InformationScreenProps {
-  data: DataApiChange; // Use the correct type for API response
-  setOption: (option: string) => void; // Prop to navigate back
+  data: DataApiChange;
+  setOption: (option: string) => void;
 }
 
 const InformationScreen: React.FC<InformationScreenProps> = ({
@@ -16,14 +19,25 @@ const InformationScreen: React.FC<InformationScreenProps> = ({
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "pending":
-        return "#000000"; // Orange for Pending
+        return "#000000";
       case "approved":
-        return "#28a745"; // Green for Approved
+        return "#28a745";
       case "rejected":
-        return "#FA425A"; // Red for Rejected
+        return "#FA425A";
       default:
-        return "#595959"; // Default grey
+        return "#595959";
     }
+  };
+
+  // Function to sanitize and parse HTML content
+  const renderHtmlContent = (html: string) => {
+    // Sanitize the HTML to ensure safety
+    const sanitizedHtml = DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ["p", "br", "strong", "ul", "ol", "li"],
+      ALLOWED_ATTR: [],
+    });
+    // Parse the sanitized HTML into React components
+    return parse(sanitizedHtml);
   };
 
   return (
@@ -50,13 +64,13 @@ const InformationScreen: React.FC<InformationScreenProps> = ({
           <FontAwesomeIcon
             icon={faCircle}
             style={{
-              color: getStatusColor(data.status), // Apply status color
+              color: getStatusColor(data.status),
             }}
             className="text-[8px] mr-2"
           />
           <p
             style={{
-              color: getStatusColor(data.status), // Apply status color to text
+              color: getStatusColor(data.status),
             }}
             className="font-bold"
           >
@@ -69,27 +83,24 @@ const InformationScreen: React.FC<InformationScreenProps> = ({
         <div className="w-1/2 h-full flex flex-col mr-7">
           <div className="flex flex-col h-[50%]">
             <p className="text-xl font-bold">Câu trả lời thay đổi</p>
-            <p className="h-full bg-[#e7effc] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-lg overflow-y-auto">
+            <div className="h-full bg-[#e7effc] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-lg overflow-y-auto">
               {data.new_object.answer ? (
                 data.new_object.answer &&
                 /<\/?[a-z][\s\S]*>/i.test(data.new_object.answer) ? (
-                  // Là HTML
-                  <div
-                    dangerouslySetInnerHTML={{ __html: data.new_object.answer }}
-                  />
+                  <div className="answer-content text-sm">
+                    {renderHtmlContent(data.new_object.answer)}
+                  </div>
                 ) : (
-                  // Là chuỗi văn bản
                   <p className="text-black text-sm">{data.new_object.answer}</p>
                 )
               ) : (
                 "Chưa có câu trả lời"
               )}
-            </p>
+            </div>
           </div>
           <div className="mt-10 h-[25%]">
             <p className="text-xl font-bold">Hình ảnh, video đính kèm</p>
             <div className="bg-[#e7effc] h-full mt-3 rounded-3xl">
-              {/* Map through images or videos */}
               {data.new_object?.images.map((img, index) => (
                 <img
                   key={index}

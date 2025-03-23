@@ -24,6 +24,8 @@ import WarpKeyWord from "./components/Keyword/KeywordWrapper";
 import WrapVideoScreen from "./components/Media/WarpVideoScreen";
 import WarpTopic from "./components/Topic/TopicWrapper";
 import TextArea from "antd/es/input/TextArea";
+import parse from "html-react-parser"; // Import html-react-parser
+import DOMPurify from "dompurify"; // Import DOMPurify
 
 interface DataApi {
   id: number;
@@ -83,6 +85,16 @@ const normalType = {
 const boldType = {
   fontWeight: "bold",
   color: "#17B8FF",
+};
+
+const renderHtmlContent = (html: string) => {
+  // Sanitize the HTML to ensure safety
+  const sanitizedHtml = DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ["p", "br", "strong", "ul", "ol", "li"],
+    ALLOWED_ATTR: [],
+  });
+  // Parse the sanitized HTML into React components
+  return parse(sanitizedHtml);
 };
 
 const Answer = () => {
@@ -293,10 +305,9 @@ const Answer = () => {
           <div className="flex-1 max-h-full overflow-y-auto pr-2">
             {typeof data.answer === "string" ? (
               /<\/?[a-z][\s\S]*>/i.test(data.answer) ? (
-                <div
-                  className="prose max-w-full"
-                  dangerouslySetInnerHTML={{ __html: data.answer }}
-                />
+                <div className="answer-content text-sm">
+                  {renderHtmlContent(data.answer)}
+                </div>
               ) : (
                 <p className="text-sm text-black">{data.answer}</p>
               )

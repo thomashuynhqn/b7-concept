@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css"; // Import Quill styles
+import "react-quill/dist/quill.snow.css";
 
 interface TextEditorProps {
-  toolbarWidth: string; // width for the toolbar
-  editorHeight: string; // height for the editor container
-  defaultValue?: string; // initial default value (optional)
-  value?: string; // controlled value (optional)
-  onChange?: (content: string) => void; // callback on content change
+  toolbarWidth: string;
+  editorHeight: string;
+  defaultValue?: string;
+  value?: string;
+  onChange?: (content: string) => void;
 }
 
 const TextEditor: React.FC<TextEditorProps> = ({
@@ -19,15 +19,11 @@ const TextEditor: React.FC<TextEditorProps> = ({
   value,
   onChange,
 }) => {
-  // Maintain an internal state if no controlled value is provided.
   const [internalValue, setInternalValue] = useState(defaultValue);
 
-  // Use the controlled value if provided, otherwise use internal state.
   const editorValue = value !== undefined ? value : internalValue;
 
-  // Handle changes from the editor.
   const handleChange = (content: string) => {
-    // Update internal state only if component is uncontrolled.
     if (value === undefined) {
       setInternalValue(content);
     }
@@ -36,14 +32,12 @@ const TextEditor: React.FC<TextEditorProps> = ({
     }
   };
 
-  // Update internal state if defaultValue changes (and we're not controlled).
   useEffect(() => {
     if (value === undefined) {
       setInternalValue(defaultValue);
     }
   }, [defaultValue, value]);
 
-  // Dynamically update toolbar and container styling.
   useEffect(() => {
     const toolbarElement = document.querySelector(".ql-toolbar");
     if (toolbarElement) {
@@ -66,14 +60,26 @@ const TextEditor: React.FC<TextEditorProps> = ({
           toolbar: [
             [{ header: [1, 2, 3, 4, 5, 6] }],
             ["bold", "italic", "underline"],
+            [{ list: "ordered" }, { list: "bullet" }],
             [
               { align: "" },
               { align: "center" },
               { align: "right" },
               { align: "justify" },
             ],
+            [{ indent: "-1" }, { indent: "+1" }], // Add indent buttons
           ],
         }}
+        formats={[
+          "header",
+          "bold",
+          "italic",
+          "underline",
+          "list",
+          "bullet",
+          "align",
+          "indent",
+        ]}
       />
     </div>
   );

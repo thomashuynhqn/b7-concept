@@ -2,13 +2,15 @@ import { faCheck, faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, Modal, Input } from "antd";
 import React, { useState } from "react";
+import parse from "html-react-parser"; // Import html-react-parser
+import DOMPurify from "dompurify"; // Import DOMPurify
 import { AdminDataChange } from "./typeDefinitions";
-import { postApproveOrReject } from "../../../api/api"; // Import the API function
+import { postApproveOrReject } from "../../../api/api";
 
 interface AdminInformationScreenProps {
   data: AdminDataChange;
-  setOption: (option: string) => void; // Prop to navigate back
-  id: number; // The ID to use in API calls
+  setOption: (option: string) => void;
+  id: number;
 }
 
 const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
@@ -20,7 +22,16 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
 
-  console.log(id);
+  // Function to sanitize and parse HTML content
+  const renderHtmlContent = (html: string) => {
+    // Sanitize the HTML to ensure safety
+    const sanitizedHtml = DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ["p", "br", "strong", "ul", "ol", "li"],
+      ALLOWED_ATTR: [],
+    });
+    // Parse the sanitized HTML into React components
+    return parse(sanitizedHtml);
+  };
 
   const handleApprove = async () => {
     try {
@@ -28,7 +39,7 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
         action: "approve",
         rejected_reason: "",
       });
-      setIsModalOpen(true); // Show success modal
+      setIsModalOpen(true);
     } catch (error) {
       console.error("Approval failed", error);
     }
@@ -36,15 +47,15 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
 
   const handleReject = async () => {
     if (!rejectReason.trim()) {
-      return; // Ensure a reason is provided
+      return;
     }
     try {
       await postApproveOrReject(id, {
         action: "reject",
         rejected_reason: rejectReason,
       });
-      setIsRejectModalOpen(false); // Close the reject modal
-      setOption("main"); // Navigate back
+      setIsRejectModalOpen(false);
+      setOption("main");
     } catch (error) {
       console.error("Rejection failed", error);
     }
@@ -53,13 +64,13 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
-        return "#000000"; // Orange for Pending
+        return "#000000";
       case "approved":
-        return "#28a745"; // Green for Approved
+        return "#28a745";
       case "rejected":
-        return "#FA425A"; // Red for Rejected
+        return "#FA425A";
       default:
-        return "#000000"; // Default to black if status is unknown
+        return "#000000";
     }
   };
 
@@ -109,14 +120,12 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
             <div className="flex flex-col h-[60%]">
               <p className="text-lg font-bold">Câu trả lời hiện tại</p>
               <div
-                className="h-full bg-[#e7effc] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-sm overflow-y-auto"
+                className="h-full bg-[#e7effc] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-sm overflow-y-auto answer-content"
                 // style={{ maxHeight: "400px" }}
               >
                 {data.old_object.answer &&
                 /<\/?[a-z][\s\S]*>/i.test(data.old_object.answer) ? (
-                  <div
-                    dangerouslySetInnerHTML={{ __html: data.old_object.answer }}
-                  />
+                  renderHtmlContent(data.old_object.answer)
                 ) : (
                   <p className="text-black text-sm">{data.old_object.answer}</p>
                 )}
@@ -152,14 +161,12 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
             <div className="flex flex-col h-[60%]">
               <p className="text-lg font-bold">Câu trả lời được thay đổi</p>
               <div
-                className="h-full bg-[#e7effc] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-sm overflow-y-auto"
+                className="h-full bg-[#e7effc] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-sm overflow-y-auto answer-content"
                 // style={{ maxHeight: "400px" }}
               >
                 {data.new_object.answer &&
                 /<\/?[a-z][\s\S]*>/i.test(data.new_object.answer) ? (
-                  <div
-                    dangerouslySetInnerHTML={{ __html: data.new_object.answer }}
-                  />
+                  renderHtmlContent(data.new_object.answer)
                 ) : (
                   <p className="text-black text-sm">{data.new_object.answer}</p>
                 )}

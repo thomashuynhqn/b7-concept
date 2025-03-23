@@ -1,0 +1,56 @@
+/* Styles for the "Câu trả lời hiện tại" section */
+.answer-content ul,
+.answer-content ol {
+  margin: 8px 0;
+  padding-left: 24px;
+}
+
+.answer-content ul li {
+  list-style-type: disc;
+}
+
+.answer-content ol li {
+  list-style-type: decimal;
+}
+
+.answer-content p {
+  margin-bottom: 8px;
+}
+
+/* Reset Quill's list styles to prevent doubling */
+.ql-container ul,
+.ql-container ol {
+  margin: 8px 0;
+  padding-left: 24px;
+  list-style-position: outside; /* Ensure bullets/numbers are outside */
+}
+
+/* Prevent double bullets/numbers in Quill */
+.ql-container ul li,
+.ql-container ol li {
+  list-style-type: none; /* Remove default list styles */
+}
+
+/* Reapply list styles using Quill's classes */
+.ql-container ul li:before {
+  content: "•"; /* Custom bullet for unordered lists */
+  margin-right: 8px;
+}
+
+.ql-container ol {
+  counter-reset: list-counter; /* Reset counter for ordered lists */
+}
+
+.ql-container ol li {
+  counter-increment: list-counter;
+}
+
+.ql-container ol li:before {
+  content: counter(list-counter) ". "; /* Custom number for ordered lists */
+  margin-right: 8px;
+}
+
+/* Fix indentation if Quill applies indent classes */
+.ql-container .ql-indent-1 {
+  padding-left: 48px;
+}

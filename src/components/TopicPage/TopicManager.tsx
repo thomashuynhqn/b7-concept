@@ -16,6 +16,8 @@ import {
   postMoveTopic,
   postRenameTopic,
 } from "../../api/api";
+import parse from "html-react-parser"; // Import html-react-parser
+import DOMPurify from "dompurify"; // Import DOMPurify
 
 const { Option } = Select;
 
@@ -137,6 +139,17 @@ const WarpCard: React.FC<WarpCardProps> = ({
     } else {
       setOpenKeys([...openKeys, `topic-${data.id}`]);
     }
+  };
+
+  // Function to sanitize and parse HTML content
+  const renderHtmlContent = (html: string) => {
+    // Sanitize the HTML to ensure safety
+    const sanitizedHtml = DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ["p", "br", "strong", "ul", "ol", "li"],
+      ALLOWED_ATTR: [],
+    });
+    // Parse the sanitized HTML into React components
+    return parse(sanitizedHtml);
   };
 
   const menuItems: MenuItem[] = [
@@ -309,12 +322,10 @@ const WarpCard: React.FC<WarpCardProps> = ({
             </h2>
             <div className="space-y-4 max-h-96 overflow-y-auto">
               <div className="p-3 border rounded-lg bg-gray-100">
-                <div className="text-gray-700">
+                <div className="text-gray-700 answer-content text-sm">
                   {selectedQA.answer &&
                   /<\/?[a-z][\s\S]*>/i.test(selectedQA.answer) ? (
-                    <div
-                      dangerouslySetInnerHTML={{ __html: selectedQA.answer }}
-                    />
+                    renderHtmlContent(selectedQA.answer)
                   ) : (
                     <p className="text-black text-sm">{selectedQA.answer}</p>
                   )}

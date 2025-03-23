@@ -5,6 +5,8 @@ import { Button, Col, Row } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart, faBookmark } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import parse from "html-react-parser"; // Import html-react-parser
+import DOMPurify from "dompurify"; // Import DOMPurify
 import { ResultCardProps } from "../types/data";
 
 const ResultCard: React.FC<ResultCardProps> = ({
@@ -16,6 +18,17 @@ const ResultCard: React.FC<ResultCardProps> = ({
   isSaved,
 }) => {
   const navigate = useNavigate();
+
+  // Function to sanitize and parse HTML content
+  const renderHtmlContent = (html: string) => {
+    // Sanitize the HTML to ensure safety
+    const sanitizedHtml = DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ["p", "br", "strong", "ul", "ol", "li"],
+      ALLOWED_ATTR: [],
+    });
+    // Parse the sanitized HTML into React components
+    return parse(sanitizedHtml);
+  };
 
   return (
     <div className="w-full bg-white mb-4">
@@ -41,10 +54,9 @@ const ResultCard: React.FC<ResultCardProps> = ({
             <div className="text-black">
               {typeof result.answer === "string" ? (
                 /<\/?[a-z][\s\S]*>/i.test(result.answer) ? (
-                  <div
-                    className="line-clamp-5 overflow-hidden text-sm"
-                    dangerouslySetInnerHTML={{ __html: result.answer }}
-                  />
+                  <div className="line-clamp-5 overflow-hidden text-sm answer-content">
+                    {renderHtmlContent(result.answer)}
+                  </div>
                 ) : (
                   <p className="line-clamp-5 overflow-hidden text-sm">
                     {result.answer}
