@@ -28,7 +28,7 @@ const InformationScreen: React.FC<InformationScreenProps> = ({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex justify-between">
+      <div className="h-[10%] flex justify-between">
         <p className="mb-10 text-[#000000] font-bold text-3xl">
           Chi tiết tiến trình xử lý
         </p>
@@ -44,8 +44,8 @@ const InformationScreen: React.FC<InformationScreenProps> = ({
         </div>
       </div>
 
-      <div className="flex justify-between p-5 bg-[#F5F9FF] rounded-3xl">
-        <p>{data.new_object.question}</p>
+      <div className="h-[9%] flex justify-between p-5 bg-[#e7effc] rounded-3xl">
+        <p className="flex items-center">{data.new_object.question}</p>
         <div className="flex items-center">
           <FontAwesomeIcon
             icon={faCircle}
@@ -65,11 +65,11 @@ const InformationScreen: React.FC<InformationScreenProps> = ({
         </div>
       </div>
 
-      <div className="flex mt-5 h-full">
+      <div className="h-[80%] flex mt-5 h-full">
         <div className="w-1/2 h-full flex flex-col mr-7">
-          <div className="flex flex-col h-3/5">
+          <div className="flex flex-col h-[50%]">
             <p className="text-xl font-bold">Câu trả lời thay đổi</p>
-            <p className="h-full bg-[#F5F9FF] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-lg overflow-y-auto">
+            <p className="h-full bg-[#e7effc] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-lg overflow-y-auto">
               {data.new_object.answer ? (
                 data.new_object.answer &&
                 /<\/?[a-z][\s\S]*>/i.test(data.new_object.answer) ? (
@@ -86,9 +86,9 @@ const InformationScreen: React.FC<InformationScreenProps> = ({
               )}
             </p>
           </div>
-          <div className="mt-10 h-1/5">
+          <div className="mt-10 h-[25%]">
             <p className="text-xl font-bold">Hình ảnh, video đính kèm</p>
-            <div className="bg-[#F5F9FF] h-full mt-3 rounded-3xl">
+            <div className="bg-[#e7effc] h-full mt-3 rounded-3xl">
               {/* Map through images or videos */}
               {data.new_object?.images.map((img, index) => (
                 <img
@@ -103,7 +103,9 @@ const InformationScreen: React.FC<InformationScreenProps> = ({
         </div>
 
         <div className="w-1/2 h-full">
-          <p className="text-xl font-bold">Phản hồi của người kiểm duyệt</p>
+          <p className="h-[5%] text-xl font-bold">
+            Phản hồi của người kiểm duyệt
+          </p>
           <p className="h-[85%] border mt-3 pl-5 pt-7 pr-10 rounded-3xl text-lg">
             {data.reason || "Không có phản hồi"}
           </p>

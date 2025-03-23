@@ -70,7 +70,7 @@ const EditorProgressScreen: React.FC<AdminProgressScreenProps> = ({
   };
 
   return (
-    <>
+    <div className="w-full h-full flex flex-col">
       {option === "main" && (
         <div className="w-full h-full flex flex-col">
           {/* Title */}
@@ -171,7 +171,7 @@ const EditorProgressScreen: React.FC<AdminProgressScreenProps> = ({
           Đang lấy thông tin thay đổi...
         </div>
       )}
-    </>
+    </div>
   );
 };
 
