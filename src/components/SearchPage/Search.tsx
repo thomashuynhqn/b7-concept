@@ -4,18 +4,19 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
+const { TextArea } = Input;
+
 const SearchComponent: React.FC = () => {
   const [value, setValue] = useState<string>("");
-  const [timeOfDay, setTimeOfDay] = useState<string>(""); // State to track the time of day
+  const [timeOfDay, setTimeOfDay] = useState<string>("");
   const navigate = useNavigate();
 
-  // Function to determine the time of day
   const getTimeOfDay = (): string => {
     const hours = new Date().getHours();
-    if (hours >= 5 && hours < 12) return "buổi sáng"; // Morning
-    if (hours >= 12 && hours < 17) return "buổi trưa"; // Noon
-    if (hours >= 17 && hours < 20) return "buổi chiều"; // Evening
-    return "buổi tối"; // Night
+    if (hours >= 5 && hours < 12) return "buổi sáng";
+    if (hours >= 12 && hours < 17) return "buổi trưa";
+    if (hours >= 17 && hours < 20) return "buổi chiều";
+    return "buổi tối";
   };
 
   useEffect(() => {
@@ -25,16 +26,19 @@ const SearchComponent: React.FC = () => {
   const handleSearch = (searchType: string) => {
     if (value.trim() === "") return;
 
-    const query = `?query=${value}`;
-    const aiQuery = `?searchAI=true&query=${value}`;
+    const formattedQuery = encodeURIComponent(value.trim());
+
+    const query = `?query=${formattedQuery}`;
+    const aiQuery = `?searchAI=true&query=${formattedQuery}`;
 
     navigate(
       searchType === "normal" ? `/results${query}` : `/results${aiQuery}`
     );
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
       handleSearch("normal");
     }
   };
@@ -69,14 +73,14 @@ const SearchComponent: React.FC = () => {
       </div>
 
       {/* Search bar */}
-      <div className="relative w-full max-w-2xl mt-8 ">
-        <Input
-          size="large"
+      <div className="relative w-full max-w-2xl mt-8">
+        <TextArea
           placeholder="Điều bạn muốn tìm kiếm là..."
-          className="h-16 px-5 pr-24 rounded-lg shadow-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#227EFF] cursor-p"
+          className="h-16 pt-4 px-5 pr-24 rounded-lg shadow-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#227EFF] resize-none"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyPress}
+          autoSize={{ minRows: 2, maxRows: 5 }}
         />
         <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center space-x-3">
           {/* Clear input icon */}

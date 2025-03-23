@@ -2,13 +2,15 @@ import { faCheck, faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, Modal, Input } from "antd";
 import React, { useState } from "react";
+import parse from "html-react-parser"; // Import html-react-parser
+import DOMPurify from "dompurify"; // Import DOMPurify
 import { AdminDataChange } from "./typeDefinitions";
-import { postApproveOrReject } from "../../../api/api"; // Import the API function
+import { postApproveOrReject } from "../../../api/api";
 
 interface AdminInformationScreenProps {
   data: AdminDataChange;
-  setOption: (option: string) => void; // Prop to navigate back
-  id: number; // The ID to use in API calls
+  setOption: (option: string) => void;
+  id: number;
 }
 
 const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
@@ -20,7 +22,16 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
 
-  console.log(id);
+  // Function to sanitize and parse HTML content
+  const renderHtmlContent = (html: string) => {
+    // Sanitize the HTML to ensure safety
+    const sanitizedHtml = DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ["p", "br", "strong", "ul", "ol", "li"],
+      ALLOWED_ATTR: [],
+    });
+    // Parse the sanitized HTML into React components
+    return parse(sanitizedHtml);
+  };
 
   const handleApprove = async () => {
     try {
@@ -28,7 +39,7 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
         action: "approve",
         rejected_reason: "",
       });
-      setIsModalOpen(true); // Show success modal
+      setIsModalOpen(true);
     } catch (error) {
       console.error("Approval failed", error);
     }
@@ -36,15 +47,15 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
 
   const handleReject = async () => {
     if (!rejectReason.trim()) {
-      return; // Ensure a reason is provided
+      return;
     }
     try {
       await postApproveOrReject(id, {
         action: "reject",
         rejected_reason: rejectReason,
       });
-      setIsRejectModalOpen(false); // Close the reject modal
-      setOption("main"); // Navigate back
+      setIsRejectModalOpen(false);
+      setOption("main");
     } catch (error) {
       console.error("Rejection failed", error);
     }
@@ -53,13 +64,13 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
-        return "#000000"; // Orange for Pending
+        return "#000000";
       case "approved":
-        return "#28a745"; // Green for Approved
+        return "#28a745";
       case "rejected":
-        return "#FA425A"; // Red for Rejected
+        return "#FA425A";
       default:
-        return "#000000"; // Default to black if status is unknown
+        return "#000000";
     }
   };
 
@@ -77,15 +88,15 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex justify-between">
+    <div className="h-full w-full flex flex-col">
+      <div className="h-[10%] flex justify-between">
         <p className="mb-10 text-[#000000] font-bold text-3xl">
           Chi tiết yêu cầu xử lý
         </p>
         <Button onClick={() => setOption("main")}>Quay lại</Button>
       </div>
 
-      <div className="flex justify-between p-5 bg-[#F5F9FF] rounded-3xl">
+      <div className="h-[10%] flex justify-between p-5 bg-[#e7effc] rounded-3xl">
         <p>{data.old_object.question}</p>
         <div className="flex items-center">
           <FontAwesomeIcon
@@ -102,32 +113,28 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
         </div>
       </div>
 
-      <div className="flex mt-5 h-full flex-col">
-        <div className="flex flex-row h-[60%]">
+      <div className="h-[70%] flex mt-5 flex-col justify-between">
+        <div className="flex flex-row h-[90%]">
           {/* Current and Changed Answers */}
-          <div className="w-1/2 flex flex-col mr-7">
-            <div className="flex flex-col h-1/2">
+          <div className="h-full w-1/2 flex flex-col mr-7">
+            <div className="flex flex-col h-[60%]">
               <p className="text-lg font-bold">Câu trả lời hiện tại</p>
               <div
-                className="h-full bg-[#F5F9FF] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-sm overflow-y-auto"
-                style={{ maxHeight: "150px" }}
+                className="h-full bg-[#e7effc] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-sm overflow-y-auto answer-content"
+                // style={{ maxHeight: "400px" }}
               >
                 {data.old_object.answer &&
                 /<\/?[a-z][\s\S]*>/i.test(data.old_object.answer) ? (
-                  // Là HTML
-                  <div
-                    dangerouslySetInnerHTML={{ __html: data.old_object.answer }}
-                  />
+                  renderHtmlContent(data.old_object.answer)
                 ) : (
-                  // Là chuỗi văn bản
                   <p className="text-black text-sm">{data.old_object.answer}</p>
                 )}
               </div>
             </div>
-            <div className="mt-7 h-1/4">
+            <div className="mt-7 h-[25%]">
               <p className="text-lg font-bold">Hình ảnh, video hiện tại</p>
               <div
-                className="bg-[#F5F9FF] h-full mt-3 rounded-3xl overflow-x-auto whitespace-nowrap"
+                className="bg-[#e7effc] h-full mt-3 rounded-3xl overflow-x-auto whitespace-nowrap"
                 style={{ maxHeight: "150px" }}
               >
                 {data.old_object.images.map((img, index) => (
@@ -150,29 +157,25 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
             </div>
           </div>
 
-          <div className="w-1/2 flex flex-col">
-            <div className="flex flex-col h-1/2">
+          <div className="h-full w-1/2 flex flex-col">
+            <div className="flex flex-col h-[60%]">
               <p className="text-lg font-bold">Câu trả lời được thay đổi</p>
               <div
-                className="h-full bg-[#F5F9FF] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-sm overflow-y-auto"
-                style={{ maxHeight: "150px" }}
+                className="h-full bg-[#e7effc] mt-3 pl-5 pt-7 pr-5 rounded-3xl text-sm overflow-y-auto answer-content"
+                // style={{ maxHeight: "400px" }}
               >
                 {data.new_object.answer &&
                 /<\/?[a-z][\s\S]*>/i.test(data.new_object.answer) ? (
-                  // Là HTML
-                  <div
-                    dangerouslySetInnerHTML={{ __html: data.new_object.answer }}
-                  />
+                  renderHtmlContent(data.new_object.answer)
                 ) : (
-                  // Là chuỗi văn bản
                   <p className="text-black text-sm">{data.new_object.answer}</p>
                 )}
               </div>
             </div>
-            <div className="mt-7 h-1/4">
+            <div className="mt-7 h-1/4 h-[25%]">
               <p className="text-lg font-bold">Hình ảnh, video được thay đổi</p>
               <div
-                className="bg-[#F5F9FF] h-full mt-3 rounded-3xl overflow-x-auto whitespace-nowrap"
+                className="bg-[#e7effc] h-full mt-3 rounded-3xl overflow-x-auto whitespace-nowrap"
                 style={{ maxHeight: "150px" }}
               >
                 {data.new_object.images.map((img, index) => (
@@ -180,14 +183,14 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
                     key={index}
                     src={img}
                     alt={`New Image ${index}`}
-                    className="inline-block w-24 h-24 object-cover mr-2"
+                    className="inline-block w-20 h-20 object-cover mr-2"
                   />
                 ))}
                 {data.new_object.videos.map((vid, index) => (
                   <video
                     key={index}
                     src={vid}
-                    className="inline-block w-24 h-24 object-cover mr-2"
+                    className="inline-block w-20 h-20 object-cover mr-2"
                     controls
                   />
                 ))}
@@ -196,12 +199,12 @@ const AdminInformationScreen: React.FC<AdminInformationScreenProps> = ({
           </div>
         </div>
 
-        <div className="mt-5 flex justify-between">
+        <div className="mt-5 flex justify-between h-[10%]">
           <Button onClick={() => setIsRejectModalOpen(true)}>
-            Huỷ chỉnh sửa
+            Từ chối duyệt
           </Button>
           <Button className="mx-5" type="primary" onClick={handleApprove}>
-            Lưu chỉnh sửa
+            Đồng ý duyệt
           </Button>
         </div>
       </div>

@@ -15,14 +15,16 @@ import {
 import TextEditor from "../../../../utils/RichTextEditor/Editor";
 import FileUpload from "../../../../utils/SharedComponents/FileUpload";
 import MediaPreview from "./MediaPreview";
+import DOMPurify from "dompurify";
 
+// Define interfaces for better type safety
 interface Topic {
   id: number;
   name: string;
   description: string;
 }
 
-export interface DataApi {
+interface DataApi {
   id: number;
   question: string;
   answer: string;
@@ -51,136 +53,137 @@ const Edit = () => {
     videos: [],
   });
 
-  const [editedContent, setEditedContent] = useState(""); // Edited answer content
-
-  // Store new media files selected by the user
+  const [editedContent, setEditedContent] = useState<string>("");
   const [newImages, setNewImages] = useState<UploadFile[]>([]);
   const [newVideos, setNewVideos] = useState<UploadFile[]>([]);
-  const _id = searchParams.get("id");
-
-  // State to track which old images and videos are marked for exclusion
   const [deletedImages, setDeletedImages] = useState<string[]>([]);
   const [deletedVideos, setDeletedVideos] = useState<string[]>([]);
 
+  const _id = searchParams.get("id");
+
+  // Fetch data on component mount
   useEffect(() => {
     if (!_id) {
       message.error("No ID provided.");
       return;
     }
 
-    dispatch(openLoading());
-    getResultsByID(Number(_id))
-      .then((res) => {
+    const fetchData = async () => {
+      dispatch(openLoading());
+      try {
+        const res = await getResultsByID(Number(_id));
         const fetchedData: DataApi = res.data;
         setDataEdit(fetchedData);
         setEditedContent(fetchedData.answer);
-        dispatch(clearLoading());
-      })
-      .catch((err) => {
-        console.error("Error:", err);
+      } catch (err) {
+        console.error("Error fetching data:", err);
         message.error("Failed to fetch data.");
+      } finally {
         dispatch(clearLoading());
-      });
+      }
+    };
+
+    fetchData();
   }, [_id, dispatch]);
 
+  // Sanitize HTML content for rendering
+  const sanitizeHtml = (html: string) => {
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ["p", "br", "strong", "ul", "ol", "li"],
+      ALLOWED_ATTR: [],
+    });
+  };
+
+  // Handle editor content change
   const handleEditorChange = useCallback((content: string) => {
     setEditedContent(content);
   }, []);
 
-  const handleFileUploadChange = (
-    images: UploadFile[],
-    videos: UploadFile[]
-  ) => {
-    setNewImages(images);
-    setNewVideos(videos);
-  };
+  // Handle file upload changes
+  const handleFileUploadChange = useCallback(
+    (images: UploadFile[], videos: UploadFile[]) => {
+      setNewImages(images);
+      setNewVideos(videos);
+    },
+    []
+  );
 
-  // Toggle deletion state for an image
-  const handleToggleDeleteImage = (url: string) => {
+  const handleToggleDeleteImage = useCallback((url: string) => {
     setDeletedImages((prev) =>
       prev.includes(url) ? prev.filter((item) => item !== url) : [...prev, url]
     );
-  };
+  }, []);
 
-  // Toggle deletion state for a video
-  const handleToggleDeleteVideo = (url: string) => {
+  const handleToggleDeleteVideo = useCallback((url: string) => {
     setDeletedVideos((prev) =>
       prev.includes(url) ? prev.filter((item) => item !== url) : [...prev, url]
     );
-  };
+  }, []);
 
-  // Upload new images and return the URLs
+  // Upload images and return URLs
   const uploadImages = useCallback(
     async (id: string): Promise<string[]> => {
-      try {
-        for (const file of newImages) {
-          if ((file.originFileObj as File).size > 15 * 1024 * 1024) {
-            message.error(`Image ${file.name} exceeds 15MB limit.`);
-            throw new Error("Image size exceeds limit.");
-          }
+      const maxSize = 15 * 1024 * 1024; // 15MB
+      for (const file of newImages) {
+        if ((file.originFileObj as File).size > maxSize) {
+          message.error(`Image ${file.name} exceeds 15MB limit.`);
+          throw new Error("Image size exceeds limit.");
         }
-        const uploadedUrls = await Promise.all(
-          newImages.map(async (file) => {
-            const imageUrl = await postUpLoadImage(
-              id,
-              file.originFileObj as File
-            );
-            if (!imageUrl) throw new Error("Image upload failed.");
-            return imageUrl;
-          })
-        );
-        message.success("All images uploaded successfully!");
-        return uploadedUrls;
-      } catch (error) {
-        message.error("One or more images failed to upload.");
-        throw error;
       }
+
+      const uploadedUrls = await Promise.all(
+        newImages.map(async (file) => {
+          const imageUrl = await postUpLoadImage(
+            id,
+            file.originFileObj as File
+          );
+          if (!imageUrl) throw new Error("Image upload failed.");
+          return imageUrl;
+        })
+      );
+      message.success("All images uploaded successfully!");
+      return uploadedUrls;
     },
     [newImages]
   );
 
-  // Upload new videos and return the URLs
+  // Upload videos and return URLs
   const uploadVideos = useCallback(
     async (id: string): Promise<string[]> => {
-      try {
-        for (const file of newVideos) {
-          if ((file.originFileObj as File).size > 15 * 1024 * 1024) {
-            message.error(`Video ${file.name} exceeds 15MB limit.`);
-            throw new Error("Video size exceeds limit.");
-          }
+      const maxSize = 15 * 1024 * 1024; // 15MB
+      for (const file of newVideos) {
+        if ((file.originFileObj as File).size > maxSize) {
+          message.error(`Video ${file.name} exceeds 15MB limit.`);
+          throw new Error("Video size exceeds limit.");
         }
-        const uploadedUrls = await Promise.all(
-          newVideos.map(async (file) => {
-            const videoUrl = await postUploadVideo(
-              id,
-              file.originFileObj as File
-            );
-            if (!videoUrl) throw new Error("Video upload failed.");
-            return videoUrl;
-          })
-        );
-        message.success("All videos uploaded successfully!");
-        return uploadedUrls;
-      } catch (error) {
-        message.error("One or more videos failed to upload.");
-        throw error;
       }
+
+      const uploadedUrls = await Promise.all(
+        newVideos.map(async (file) => {
+          const videoUrl = await postUploadVideo(
+            id,
+            file.originFileObj as File
+          );
+          if (!videoUrl) throw new Error("Video upload failed.");
+          return videoUrl;
+        })
+      );
+      message.success("All videos uploaded successfully!");
+      return uploadedUrls;
     },
     [newVideos]
   );
 
+  // Handle form submission
   const handleSubmitChange = useCallback(async () => {
-    dispatch(openLoading());
     const user_id = localStorage.getItem("user_id");
-
     if (!user_id) {
       message.error("User ID not found. Please log in again.");
-      dispatch(clearLoading());
       return;
     }
 
+    dispatch(openLoading());
     try {
-      // Upload new media files if any
       let newUploadedImages: string[] = [];
       let newUploadedVideos: string[] = [];
 
@@ -191,7 +194,6 @@ const Edit = () => {
         newUploadedVideos = await uploadVideos(dataEdit.id.toString());
       }
 
-      // Safely filter out media marked for deletion
       const remainingImages = (dataEdit.images || []).filter(
         (url) => !deletedImages.includes(url)
       );
@@ -199,22 +201,16 @@ const Edit = () => {
         (url) => !deletedVideos.includes(url)
       );
 
-      // Combine existing and newly uploaded media
       const imagesPayload = [...remainingImages, ...newUploadedImages];
       const videosPayload = [...remainingVideos, ...newUploadedVideos];
 
-      // Build the request body conditionally
       const requestBody: any = {
         ...dataEdit,
         answer: editedContent,
         userid: user_id,
+        ...(imagesPayload.length > 0 && { images: imagesPayload }),
+        ...(videosPayload.length > 0 && { videos: videosPayload }),
       };
-      if (imagesPayload.length > 0) {
-        requestBody.images = imagesPayload;
-      }
-      if (videosPayload.length > 0) {
-        requestBody.videos = videosPayload;
-      }
 
       const res = await postSubmitChange(dataEdit.id, requestBody);
       message.success(res.data.message);
@@ -273,28 +269,29 @@ const Edit = () => {
         </Col>
       </Row>
 
-      {/* Main Content (Old and New Item Sections) */}
+      {/* Main Content */}
       <Row
         gutter={16}
         className="w-full flex justify-between"
         style={{ height: "60%" }}
       >
-        {/* Old Item Section */}
+        {/* Current Answer Section */}
         <Col span={12} className="p-4">
-          <div className="p-4 bg-[#F2F2F2] rounded-3xl">
+          <div className="p-4 bg-[#F2F2F2] rounded-3xl h-full">
             <p className="text-black font-semibold text-base">
               Câu trả lời hiện tại
             </p>
             <div
-              className="mt-2 overflow-y-auto"
+              className="mt-2 overflow-y-auto answer-content"
               style={{ maxHeight: "300px" }}
             >
-              {typeof dataEdit.answer === "string" ? (
-                /<\/?[a-z][\s\S]*>/i.test(dataEdit.answer) ? (
-                  <div dangerouslySetInnerHTML={{ __html: dataEdit.answer }} />
-                ) : (
-                  <p className="text-black text-sm">{dataEdit.answer}</p>
-                )
+              {dataEdit?.answer ? (
+                <div
+                  className="text-black text-sm"
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(dataEdit.answer),
+                  }}
+                />
               ) : (
                 <p className="text-black text-sm">Không có dữ liệu hợp lệ</p>
               )}
@@ -302,9 +299,9 @@ const Edit = () => {
           </div>
         </Col>
 
-        {/* New Item Section */}
+        {/* New Answer Section */}
         <Col span={12} className="p-4">
-          <div className="p-4 border-2 border-[#BFBFBF] rounded-3xl">
+          <div className="p-4 border-2 border-[#BFBFBF] rounded-3xl h-full">
             <p className="text-black font-semibold text-base">
               Câu trả lời mới
             </p>
@@ -329,7 +326,7 @@ const Edit = () => {
         className="w-full flex justify-between"
         style={{ height: "30%" }}
       >
-        {/* Old Media Section */}
+        {/* Current Media Section */}
         <Col span={12} className="p-4">
           <div className="h-full p-4 bg-[#F5F9FF] rounded-3xl">
             <p className="text-black font-semibold text-base">

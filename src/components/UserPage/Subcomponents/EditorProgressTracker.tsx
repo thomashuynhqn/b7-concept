@@ -70,7 +70,7 @@ const EditorProgressScreen: React.FC<AdminProgressScreenProps> = ({
   };
 
   return (
-    <>
+    <div className="w-full h-full flex flex-col">
       {option === "main" && (
         <div className="w-full h-full flex flex-col">
           {/* Title */}
@@ -101,38 +101,44 @@ const EditorProgressScreen: React.FC<AdminProgressScreenProps> = ({
                 {/* Table Body */}
                 <tbody>
                   {dataList.length > 0 ? (
-                    dataList.map((item) => (
-                      <tr
-                        key={item.id}
-                        className="border-b transition duration-200 hover:bg-gray-50 cursor-pointer"
-                        onClick={() =>
-                          handleSetOption("Admininformation", item.id)
-                        }
-                      >
-                        <td className="py-3 px-4 text-black text-sm">
-                          {item.question}
-                        </td>
-                        <td className="py-3 px-4 text-black text-sm">
-                          {item.submitted_by_username}
-                        </td>
-                        <td className="py-3 px-4 flex items-center space-x-2">
-                          <FontAwesomeIcon
-                            icon={faCircle}
-                            className="text-xs"
-                            style={{ color: getStatusColor(item.status) }}
-                          />
-                          <span
-                            className="text-sm"
-                            style={{ color: getStatusColor(item.status) }}
-                          >
-                            {translateStatus(item.status)}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-600">
-                          {formatDate(item.created_at)}
-                        </td>
-                      </tr>
-                    ))
+                    [...dataList]
+                      .sort(
+                        (a, b) =>
+                          new Date(b.created_at).getTime() -
+                          new Date(a.created_at).getTime()
+                      ) // 🔹 Sort descending
+                      .map((item) => (
+                        <tr
+                          key={item.id}
+                          className="border-b transition duration-200 hover:bg-gray-50 cursor-pointer"
+                          onClick={() =>
+                            handleSetOption("Admininformation", item.id)
+                          }
+                        >
+                          <td className="py-3 px-4 text-black text-sm">
+                            {item.question}
+                          </td>
+                          <td className="py-3 px-4 text-black text-sm">
+                            {item.submitted_by_username}
+                          </td>
+                          <td className="py-3 px-4 flex items-center space-x-2">
+                            <FontAwesomeIcon
+                              icon={faCircle}
+                              className="text-xs"
+                              style={{ color: getStatusColor(item.status) }}
+                            />
+                            <span
+                              className="text-sm"
+                              style={{ color: getStatusColor(item.status) }}
+                            >
+                              {translateStatus(item.status)}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-600">
+                            {formatDate(item.created_at)}
+                          </td>
+                        </tr>
+                      ))
                   ) : (
                     <tr>
                       <td
@@ -165,7 +171,7 @@ const EditorProgressScreen: React.FC<AdminProgressScreenProps> = ({
           Đang lấy thông tin thay đổi...
         </div>
       )}
-    </>
+    </div>
   );
 };
 

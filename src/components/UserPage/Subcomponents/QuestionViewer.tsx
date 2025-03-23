@@ -1,10 +1,9 @@
 import { Button, message, Spin } from "antd";
 import React, { useState, useEffect } from "react";
-import { getSaveQuestions, postDeleteSavedQuestion } from "../../../api/api"; // Ensure correct API import
+import parse from "html-react-parser"; // Import html-react-parser
+import DOMPurify from "dompurify"; // Import DOMPurify
+import { getSaveQuestions, postDeleteSavedQuestion } from "../../../api/api";
 
-// interface SaveQuestionData {
-//   saved_questions: DataApi[];
-// }
 interface DataApi {
   id: number;
   question: string;
@@ -52,6 +51,17 @@ const WarpCard: React.FC<WarpCardProps> = ({
 };
 
 const WarpCardInfor: React.FC<WarpCardInforProps> = ({ data }) => {
+  // Function to sanitize and parse HTML content
+  const renderHtmlContent = (html: string) => {
+    // Sanitize the HTML to ensure safety
+    const sanitizedHtml = DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ["p", "br", "strong", "ul", "ol", "li"],
+      ALLOWED_ATTR: [],
+    });
+    // Parse the sanitized HTML into React components
+    return parse(sanitizedHtml);
+  };
+
   return (
     <div className="h-full">
       <p className="mt-7 mb-3 text-lg font-bold">Câu hỏi ban đầu</p>
@@ -63,10 +73,10 @@ const WarpCardInfor: React.FC<WarpCardInforProps> = ({ data }) => {
         style={{ maxHeight: "500px" }}
       >
         {data.answer && /<\/?[a-z][\s\S]*>/i.test(data.answer) ? (
-          // Là HTML
-          <div dangerouslySetInnerHTML={{ __html: data.answer }} />
+          <div className="answer-content text-sm">
+            {renderHtmlContent(data.answer)}
+          </div>
         ) : (
-          // Là chuỗi văn bản
           <p className="text-black text-sm">
             {data.answer || "Chưa có câu trả lời"}
           </p>

@@ -96,45 +96,51 @@ const ProgressScreen: React.FC<ProgressScreenProps> = ({ dataList = [] }) => {
                 {/* Table Body */}
                 <tbody>
                   {dataList.length > 0 ? (
-                    dataList.map((item) => (
-                      <tr
-                        key={item.id}
-                        className="border-b transition duration-200 hover:bg-gray-50"
-                      >
-                        <td className="py-3 px-4 text-black text-sm">
-                          {item.question}
-                        </td>
-                        <td className="py-3 px-4 flex items-center space-x-2">
-                          <FontAwesomeIcon
-                            icon={faCircle}
-                            className="text-xs"
-                            style={{ color: getStatusColor(item.status) }}
-                          />
-                          <span
-                            className="text-sm"
-                            style={{ color: getStatusColor(item.status) }}
-                          >
-                            {translateStatus(item.status)}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-600">
-                          {formatDate(item.created_at)}
-                        </td>
-                        <td className="py-3 px-4 flex justify-center">
-                          <Button
-                            type="link"
-                            onClick={() =>
-                              handleSetOption("information", item.id)
-                            }
-                          >
+                    [...dataList]
+                      .sort(
+                        (a, b) =>
+                          new Date(b.created_at).getTime() -
+                          new Date(a.created_at).getTime()
+                      ) // 🔹 Sort by latest date
+                      .map((item) => (
+                        <tr
+                          key={item.id}
+                          className="border-b transition duration-200 hover:bg-gray-50"
+                        >
+                          <td className="py-3 px-4 text-black text-sm">
+                            {item.question}
+                          </td>
+                          <td className="py-3 px-4 flex items-center space-x-2">
                             <FontAwesomeIcon
-                              icon={faEdit}
-                              className="text-blue-500"
+                              icon={faCircle}
+                              className="text-xs"
+                              style={{ color: getStatusColor(item.status) }}
                             />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))
+                            <span
+                              className="text-sm"
+                              style={{ color: getStatusColor(item.status) }}
+                            >
+                              {translateStatus(item.status)}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-600">
+                            {formatDate(item.created_at)}
+                          </td>
+                          <td className="py-3 px-4 flex justify-center">
+                            <Button
+                              type="link"
+                              onClick={() =>
+                                handleSetOption("information", item.id)
+                              }
+                            >
+                              <FontAwesomeIcon
+                                icon={faEdit}
+                                className="text-blue-500"
+                              />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
                   ) : (
                     <tr>
                       <td
