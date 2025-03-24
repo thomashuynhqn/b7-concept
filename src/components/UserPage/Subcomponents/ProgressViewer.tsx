@@ -7,12 +7,17 @@ import { getDetailsChanges } from "../../../api/api";
 import InformationScreen from "./InformationViewer";
 import EditScreen from "./ProfileEditor";
 import { DataApi, DataApiChange } from "./typeDefinitions";
+import { set } from "lodash";
 
 interface ProgressScreenProps {
   dataList: DataApi[];
+  handleSetOptionProcess: (option: string) => void;
 }
 
-const ProgressScreen: React.FC<ProgressScreenProps> = ({ dataList = [] }) => {
+const ProgressScreen: React.FC<ProgressScreenProps> = ({
+  dataList = [],
+  handleSetOptionProcess,
+}) => {
   const [option, setOption] = useState<string>("main");
   const [selectedData, setSelectedData] = useState<DataApiChange | null>(null);
   const [loading, setLoading] = useState(false); // Keep track of API loading state
@@ -167,12 +172,23 @@ const ProgressScreen: React.FC<ProgressScreenProps> = ({ dataList = [] }) => {
 
       {/* Information Screen */}
       {option === "information" && selectedData && !loading && (
-        <InformationScreen data={selectedData} setOption={setOption} />
+        <InformationScreen
+          data={selectedData}
+          setOption={(value) => {
+            setOption(value);
+          }}
+        />
       )}
 
       {/* Edit Screen */}
       {option === "edit" && selectedData && !loading && (
-        <EditScreen data={selectedData} setOption={setOption} />
+        <EditScreen
+          data={selectedData}
+          setOption={(value) => {
+            handleSetOptionProcess(value);
+            setOption(value);
+          }}
+        />
       )}
     </>
   );
