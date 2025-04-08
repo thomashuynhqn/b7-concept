@@ -464,7 +464,7 @@ const WarehouseScreen: React.FC<WarpWareHouseProps> = ({ data }) => {
                 }
               />
               <Button
-                className="ml-10 flex items-center w-1/4 h-auto border-none"
+                className="ml-10 flex items-center w-fit h-auto border-none whitespace-nowrap px-4 py-2"
                 style={{
                   borderRadius: 16,
                   backgroundColor: "#FF7600",

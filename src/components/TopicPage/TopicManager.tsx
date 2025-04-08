@@ -545,7 +545,7 @@ const TopicManage: React.FC = () => {
             }
           />
           <Button
-            className="ml-10 flex items-center w-1/6 h-auto border-none"
+            className="ml-10 flex items-center w-fit h-auto border-none whitespace-nowrap px-4 py-2"
             style={{
               borderRadius: 16,
               backgroundColor: "#FF7600",
