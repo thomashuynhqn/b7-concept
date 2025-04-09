@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import { getDetailsChanges } from "../../../api/api";
 import AdminInformationScreen from "./AdminInformationScreen";
 import { AdminDataApi, DataApiChange } from "./typeDefinitions";
-import { useDispatch } from "react-redux";
-import { openLoading } from "../../../redux/slices/loadingSlice";
+// import { useDispatch } from "react-redux";
+// import { openLoading } from "../../../redux/slices/loadingSlice";
 
 interface AdminProgressScreenProps {
   dataList: AdminDataApi[];
@@ -21,7 +21,6 @@ const EditorProgressScreen: React.FC<AdminProgressScreenProps> = ({
     useState<DataApiChange | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const dispatch = useDispatch();
   const handleSetOption = async (option: string, id: number) => {
     if (option === "Admininformation") {
       setLoading(true);

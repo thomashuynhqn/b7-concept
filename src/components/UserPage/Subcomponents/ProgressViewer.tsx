@@ -7,7 +7,7 @@ import { getDetailsChanges } from "../../../api/api";
 import InformationScreen from "./InformationViewer";
 import EditScreen from "./ProfileEditor";
 import { DataApi, DataApiChange } from "./typeDefinitions";
-import { set } from "lodash";
+// import { set } from "lodash";
 
 interface ProgressScreenProps {
   dataList: DataApi[];
