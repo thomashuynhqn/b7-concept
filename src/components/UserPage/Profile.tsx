@@ -165,6 +165,41 @@ const User: React.FC = () => {
     navigate("/login");
   };
 
+  const handleSetOptionEditProcess = (option: string) => {
+    console.log("🚀 ~ handleSetOptionEditProcess ~ option:", option);
+    setIsProgressDataFetched(false);
+    if (option === "main") {
+      if (
+        (tabs === "progress" || tabs === "editorprogress") &&
+        !isProgressDataFetched
+      ) {
+        let apiCall: (() => Promise<any>) | null = null;
+
+        switch (tier) {
+          case "admin":
+            apiCall = getListPendingAdmin;
+            break;
+          case "editor":
+            apiCall = getListPendingEditor;
+            break;
+          case "writer":
+          case "reader":
+            const userId = localStorage.getItem("user_id");
+            if (userId) {
+              const numericUserId = Number(userId);
+              if (!isNaN(numericUserId)) {
+                apiCall = () => getListStatusUser(numericUserId);
+              }
+            }
+            break;
+        }
+
+        if (apiCall) {
+          fetchData(apiCall, setProgressData, setIsProgressDataFetched);
+        }
+      }
+    }
+  };
   const handleNavigateWithQuery = (tab: string) => {
     navigate(`/user?tab=${tab}`);
     setTabs(tab);
@@ -177,9 +212,19 @@ const User: React.FC = () => {
       case "question":
         return savedData ? <QuestionScreen /> : <div>Loading...</div>;
       case "progress":
-        return <ProgressScreen dataList={progressData} />;
+        return (
+          <ProgressScreen
+            dataList={progressData}
+            handleSetOptionProcess={handleSetOptionEditProcess}
+          />
+        );
       case "editorprogress":
-        return <EditorProgressScreen dataList={progressData} />;
+        return (
+          <EditorProgressScreen
+            dataList={progressData}
+            handleSetOptionEditProcess={handleSetOptionEditProcess}
+          />
+        );
       case "dashboard":
         return <DashboardScreen />;
       case "usergroup":

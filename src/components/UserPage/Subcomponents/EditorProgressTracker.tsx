@@ -4,23 +4,27 @@ import React, { useState } from "react";
 import { getDetailsChanges } from "../../../api/api";
 import AdminInformationScreen from "./AdminInformationScreen";
 import { AdminDataApi, DataApiChange } from "./typeDefinitions";
+// import { useDispatch } from "react-redux";
+// import { openLoading } from "../../../redux/slices/loadingSlice";
 
 interface AdminProgressScreenProps {
   dataList: AdminDataApi[];
+  handleSetOptionEditProcess: (option: string) => void;
 }
 
 const EditorProgressScreen: React.FC<AdminProgressScreenProps> = ({
   dataList = [],
+  handleSetOptionEditProcess,
 }) => {
   const [option, setOption] = useState<string>("main");
   const [selectedDataChange, setSelectedDataChange] =
     useState<DataApiChange | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-
   const handleSetOption = async (option: string, id: number) => {
     if (option === "Admininformation") {
       setLoading(true);
+      // dispatch(openLoading());
       try {
         const res = await getDetailsChanges(id);
         setSelectedDataChange(res.data);
@@ -160,7 +164,10 @@ const EditorProgressScreen: React.FC<AdminProgressScreenProps> = ({
       {option === "Admininformation" && selectedDataChange && selectedId && (
         <AdminInformationScreen
           data={selectedDataChange}
-          setOption={setOption}
+          setOption={(value) => {
+            setOption(value);
+            handleSetOptionEditProcess(value);
+          }}
           id={selectedId}
         />
       )}
